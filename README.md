@@ -1,120 +1,270 @@
 # NexoForma
 
-Proyecto base de **NexoForma** con arquitectura nueva sobre **Next.js + TypeScript + Supabase**, usando **App Router**, **middleware** y separación de clientes Supabase para navegador, servidor y middleware.
+Proyecto limpio de **NexoForma** construido con **Next.js + TypeScript + Supabase**, sin reutilizar la aplicación vieja basada en `localStorage`.
 
-## Incluye
+## Qué incluye
 
-- Next.js + TypeScript
-- Supabase
-- Middleware para refresco de sesión
-- Login por **usuario + contraseña**
-- Registro de nutricionista con **token de acceso**
-- Roles base: `admin`, `nutritionist`, `client`
+- login visible con **usuario + contraseña**
+- resolución interna **username -> email**
+- registro de **nutricionista** con token
+- registro de **cliente** con token
+- panel **admin** para generar tokens de nutricionista
+- panel **nutricionista** para generar tokens de cliente
+- panel **cliente**
+- `middleware.ts`
+- `lib/supabase/client.ts`
+- `lib/supabase/server.ts`
+- `lib/supabase/middleware.ts`
+- `supabase/schema.sql`
+- `supabase/seed_admin.sql`
+- `supabase/seed_test_nutritionist_token.sql`
 
-## Estructura principal
+## Stack
 
-```text
-app/
-  api/register/nutritionist/route.ts
-  admin/page.tsx
-  client/page.tsx
-  login/page.tsx
-  nutritionist/page.tsx
-  page.tsx
-  register/nutritionist/page.tsx
-lib/
-  auth.ts
-  supabase/
-    client.ts
-    middleware.ts
-    server.ts
-supabase/
-  schema.sql
-  seed_test_token.sql
-middleware.ts
-```
+- Next.js
+- TypeScript
+- Supabase Auth
+- Supabase Postgres
 
 ## Variables de entorno
 
-Copia `.env.example` a `.env.local` y completa los valores:
+Crea tu `.env.local` a partir de `.env.example`.
 
 ```bash
 cp .env.example .env.local
 ```
 
-Variables necesarias:
+Rellena estas variables:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_BOOTSTRAP_TOKEN=
+```
 
-## Preparación en Supabase
-
-1. Crea un proyecto en Supabase.
-2. Ejecuta `supabase/schema.sql` en el editor SQL.
-3. Ejecuta `supabase/seed_test_token.sql` para insertar un token de prueba.
-4. Verifica que las claves del proyecto estén en `.env.local`.
-
-## Instalación
+## Instalación local
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Flujo actual
+## Preparación de Supabase
 
-### 1. Registro de nutricionista
-Ruta: `/register/nutritionist`
+### 1) Ejecutar el esquema
 
-Campos:
-- Nombre completo
-- Usuario
-- Contraseña
-- Token de acceso
+Abre **Supabase > SQL Editor** y ejecuta por completo:
 
-El sistema:
-- valida el token
-- crea un usuario en Supabase Auth usando un correo técnico interno basado en el usuario
-- crea el perfil en `profiles`
-- marca el token como usado
+- `supabase/schema.sql`
 
-### 2. Login
-Ruta: `/login`
+Esto crea:
 
-El usuario inicia sesión con:
+- `profiles`
+- `nutritionists`
+- `clients`
+- `client_profiles`
+- `entries`
+- `access_tokens`
+
+También crea:
+
+- índices
+- restricciones
+- `username` único
+- `email` único
+- RLS básico
+
+### 2) Crear el usuario admin en Auth
+
+Ve a:
+
+- **Authentication > Users > Add user**
+
+Crea un usuario con email y contraseña, por ejemplo:
+
+- email: `admin@nexoforma.local`
+- contraseña: la que quieras
+
+Todavía no será admin hasta ejecutar el siguiente script.
+
+### 3) Ejecutar `seed_admin.sql`
+
+Abre `supabase/seed_admin.sql` y cambia estos valores si quieres:
+
+- email
+- username
+- full_name
+
+Después ejecuta el archivo en **Supabase > SQL Editor**.
+
+Con eso se insertará o actualizará la fila en `profiles` con:
+
+- `role = 'admin'`
+
+### 4) Crear un token de prueba para nutricionista
+
+Ejecuta:
+
+- `supabase/seed_test_nutritionist_token.sql`
+
+Esto crea o reinicia el token:
+
+- `NEXO-NUTRI-TEST-001`
+
+## Flujo completo de prueba
+
+### A. Login como admin
+
+Entra en:
+
+- `/login`
+
+Usa el **username** configurado en `seed_admin.sql` y la contraseña del usuario que creaste en **Authentication > Users**.
+
+### B. Generar token de nutricionista
+
+En el panel `/admin`:
+
+- genera un token nuevo
+- o usa `NEXO-NUTRI-TEST-001`
+
+### C. Registrar nutricionista
+
+Entra en:
+
+- `/register/nutritionist`
+
+Rellena:
+
 - usuario
+- nombre completo
+- clínica
+- email interno
 - contraseña
+- token
 
-Internamente se transforma el usuario a un correo técnico interno, para no depender de un correo real.
+Qué debe pasar:
 
-### 3. Redirección por rol
-Después del login:
-- `admin` → `/admin`
-- `nutritionist` → `/nutritionist`
-- `client` → `/client`
+- se crea usuario en `auth.users`
+- se crea perfil en `profiles`
+- se crea fila en `nutritionists`
+- el token queda en `used`
 
-## Nota importante sobre contraseñas
+### D. Login como nutricionista
 
-No se está usando MD5. La contraseña queda gestionada por **Supabase Auth**, que aplica un esquema seguro de almacenamiento y verificación. Esto es preferible a guardar contraseñas con MD5.
+Entra en:
 
-## Qué falta si quieres seguir evolucionándolo
+- `/login`
 
-- Alta de clientes desde panel admin
-- Generación de tokens desde panel admin
-- Gestión real de agendas, planes o seguimientos
-- Diseño visual corporativo
-- Tests y validaciones más profundas
-- Confirmación por correo si más adelante decides usar email real
+Usa:
 
+- username del nutricionista
+- contraseña del nutricionista
 
-## Primer usuario administrador
+En `/nutritionist` podrás generar tokens de cliente.
 
-Esta base no crea automáticamente un administrador. Para probar `/admin`, puedes crear un usuario desde Supabase Auth y después insertar su perfil manualmente en `profiles` con rol `admin`.
+### E. Generar token de cliente
 
-Ejemplo:
+Desde `/nutritionist` genera un token de cliente.
 
-```sql
-insert into public.profiles (id, username, full_name, role)
-values ('UUID_DEL_USUARIO_AUTH', 'admin', 'Administrador', 'admin');
+Qué hace el sistema:
+
+- crea `access_tokens.token_type = 'client_invite'`
+- deja asociado `assigned_to_nutritionist` al nutricionista actual
+
+### F. Registrar cliente
+
+Entra en:
+
+- `/register/client`
+
+Rellena:
+
+- usuario
+- nombre completo
+- email interno
+- contraseña
+- token de cliente
+
+Qué debe pasar:
+
+- se crea usuario en `auth.users`
+- se crea perfil en `profiles`
+- se crea fila en `clients`
+- se crea fila en `client_profiles`
+- el token queda en `used`
+
+### G. Login como cliente
+
+Entra en:
+
+- `/login`
+
+Usa:
+
+- username del cliente
+- contraseña del cliente
+
+Deberías entrar en `/client`.
+
+## Estructura principal
+
+```text
+app/
+  api/
+    admin/tokens/nutritionist/route.ts
+    login/route.ts
+    logout/route.ts
+    nutritionist/tokens/client/route.ts
+    register/client/route.ts
+    register/nutritionist/route.ts
+  admin/page.tsx
+  client/page.tsx
+  login/page.tsx
+  nutritionist/page.tsx
+  page.tsx
+  register/client/page.tsx
+  register/nutritionist/page.tsx
+lib/
+  supabase/
+    admin.ts
+    client.ts
+    middleware.ts
+    server.ts
+  auth.ts
+  constants.ts
+  env.ts
+  tokens.ts
+  types.ts
+  utils.ts
+supabase/
+  schema.sql
+  seed_admin.sql
+  seed_test_nutritionist_token.sql
+middleware.ts
 ```
+
+## Notas técnicas
+
+- El usuario nunca mete el email para iniciar sesión. Solo **username + password**.
+- El sistema resuelve el username contra `profiles.email` y autentica con Supabase Auth.
+- No se usa MD5.
+- Las contraseñas las gestiona Supabase Auth.
+- Las operaciones sensibles del backend usan `SUPABASE_SERVICE_ROLE_KEY` solo en servidor.
+
+## Qué no subir
+
+No subas a GitHub:
+
+- `.env.local`
+- `.next`
+- `node_modules`
+
+## Siguiente evolución recomendada
+
+- alta y edición de entradas de peso
+- vista de evolución del cliente
+- recuperación de contraseña
+- auditoría de tokens
+- endurecer políticas RLS si se va a abrir más lógica al cliente

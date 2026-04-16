@@ -1,72 +1,117 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { getSupabasePublicEnv, getSupabaseServerEnv } from "@/lib/env";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { ROLE_DASHBOARD } from "@/lib/constants";
 
-const protectedRoutes = ["/admin", "/nutritionist", "/client"];
+function isProtectedPath(pathname: string) {
+  return (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/nutritionist") ||
+    pathname.startsWith("/client")
+  );
+}
+
+function isAuthScreen(pathname: string) {
+  return pathname === "/login" || pathname.startsWith("/register/");
+}
+
+function getDefaultDashboard(role: string | null | undefined) {
+  return ROLE_DASHBOARD[role ?? ""] ?? "/";
+}
 
 export async function updateSession(request: NextRequest) {
+  const { url, publishableKey } = getSupabasePublicEnv();
+  getSupabaseServerEnv();
+
   let response = NextResponse.next({
-    request
+    request: {
+      headers: request.headers,
+    },
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return response;
-  }
-
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  const supabase = createServerClient(url, publishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
+        cookiesToSet.forEach(({ name, value }) => {
           request.cookies.set(name, value);
+        });
 
-          response = NextResponse.next({
-            request
-          });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
 
+        cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
-      }
-    }
+      },
+    },
   });
 
   const {
-    data: { user }
-  } = await supabase.auth.getUser();
+    data: { claims },
+  } = await supabase.auth.getClaims();
 
-  const needsAuth = protectedRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
-  );
+  const userId = typeof claims?.sub === "string" ? claims.sub : null;
+  const pathname = request.nextUrl.pathname;
 
-  if (needsAuth && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("redirectedFrom", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
+  if (!userId) {
+    if (isProtectedPath(pathname)) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return response;
   }
 
-  if (user && request.nextUrl.pathname === "/login") {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
 
-    if (profile?.role) {
-      const url = request.nextUrl.clone();
-      url.pathname =
-        profile.role === "admin"
-          ? "/admin"
-          : profile.role === "nutritionist"
-            ? "/nutritionist"
-            : "/client";
+  const profile = (data ?? null) as { role: string } | null;
 
-      return NextResponse.redirect(url);
-    }
+  if (!profile?.role) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (isAuthScreen(pathname)) {
+    const targetUrl = request.nextUrl.clone();
+    targetUrl.pathname = getDefaultDashboard(profile.role);
+    targetUrl.search = "";
+    return NextResponse.redirect(targetUrl);
+  }
+
+  if (pathname.startsWith("/admin") && profile.role !== "admin") {
+    const targetUrl = request.nextUrl.clone();
+    targetUrl.pathname = getDefaultDashboard(profile.role);
+    targetUrl.search = "";
+    return NextResponse.redirect(targetUrl);
+  }
+
+  if (pathname.startsWith("/nutritionist") && profile.role !== "nutritionist") {
+    const targetUrl = request.nextUrl.clone();
+    targetUrl.pathname = getDefaultDashboard(profile.role);
+    targetUrl.search = "";
+    return NextResponse.redirect(targetUrl);
+  }
+
+  if (pathname.startsWith("/client") && profile.role !== "client") {
+    const targetUrl = request.nextUrl.clone();
+    targetUrl.pathname = getDefaultDashboard(profile.role);
+    targetUrl.search = "";
+    return NextResponse.redirect(targetUrl);
   }
 
   return response;

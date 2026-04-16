@@ -1,0 +1,22 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
+export function LogoutButton() {
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch("/api/logout", {
+      method: "POST",
+    });
+
+    router.push("/login");
+    router.refresh();
+  }
+
+  return (
+    <button className="secondary" type="button" onClick={handleLogout}>
+      Cerrar sesión
+    </button>
+  );
+}

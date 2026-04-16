@@ -1,13 +1,13 @@
-import "./globals.css";
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "NexoForma",
-  description: "Base nueva de NexoForma con Next.js, TypeScript y Supabase"
+  description: "Plataforma web de control de peso con Supabase y Next.js",
 };
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {

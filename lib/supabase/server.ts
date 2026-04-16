@@ -1,17 +1,13 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient as createSupabaseServerClient } from "@supabase/ssr";
+import type { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { getSupabasePublicEnv } from "@/lib/env";
 
 export async function createClient() {
   const cookieStore = await cookies();
+  const { url, publishableKey } = getSupabasePublicEnv();
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Faltan variables públicas de Supabase.");
-  }
-
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
+  return createSupabaseServerClient(url, publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -22,9 +18,28 @@ export async function createClient() {
             cookieStore.set(name, value, options);
           });
         } catch {
-          // En componentes del servidor puede fallar si se intenta mutar cookies fuera de contexto.
+          // No pasa nada si estamos en un contexto donde no se pueden escribir cookies.
         }
-      }
-    }
+      },
+    },
+  });
+}
+
+export async function createRouteHandlerClient(response: NextResponse) {
+  const cookieStore = await cookies();
+  const { url, publishableKey } = getSupabasePublicEnv();
+
+  return createSupabaseServerClient(url, publishableKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          cookieStore.set(name, value, options);
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
   });
 }

@@ -7,10 +7,9 @@ import {
   normalizeUsername,
 } from "@/lib/utils";
 
-type RegisterNutritionistPayload = {
+type RegisterClientPayload = {
   username?: string;
   fullName?: string;
-  clinicName?: string;
   email?: string;
   password?: string;
   token?: string;
@@ -23,21 +22,21 @@ type AccessTokenRow = {
   status: string;
   used_at: string | null;
   expires_at: string | null;
+  assigned_to_client: string | null;
   assigned_to_nutritionist: string | null;
 };
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as RegisterNutritionistPayload;
+    const body = (await request.json()) as RegisterClientPayload;
 
     const username = normalizeUsername(body.username ?? "");
     const fullName = (body.fullName ?? "").trim();
-    const clinicName = (body.clinicName ?? "").trim();
     const email = (body.email ?? "").trim().toLowerCase();
     const password = body.password ?? "";
     const token = (body.token ?? "").trim();
 
-    if (!username || !fullName || !clinicName || !email || !password || !token) {
+    if (!username || !fullName || !email || !password || !token) {
       return NextResponse.json(
         {
           success: false,
@@ -114,9 +113,11 @@ export async function POST(request: Request) {
 
     const { data, error: tokenError } = await admin
       .from("access_tokens")
-      .select("id, token, token_type, status, used_at, expires_at, assigned_to_nutritionist")
+      .select(
+        "id, token, token_type, status, used_at, expires_at, assigned_to_client, assigned_to_nutritionist"
+      )
       .eq("token", token)
-      .eq("token_type", "nutritionist_invite")
+      .eq("token_type", "client_invite")
       .maybeSingle();
 
     const tokenRow = (data ?? null) as AccessTokenRow | null;
@@ -135,7 +136,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "El token no existe o no corresponde a un nutricionista.",
+          message: "El token no existe o no corresponde a un cliente.",
         },
         { status: 400 }
       );
@@ -151,11 +152,21 @@ export async function POST(request: Request) {
       );
     }
 
-    if (tokenRow.used_at || tokenRow.assigned_to_nutritionist) {
+    if (tokenRow.used_at || tokenRow.assigned_to_client) {
       return NextResponse.json(
         {
           success: false,
           message: "El token ya ha sido utilizado.",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!tokenRow.assigned_to_nutritionist) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "El token no está vinculado a ningún nutricionista.",
         },
         { status: 400 }
       );
@@ -178,8 +189,7 @@ export async function POST(request: Request) {
       user_metadata: {
         username,
         full_name: fullName,
-        clinic_name: clinicName,
-        role: "nutritionist",
+        role: "client",
       },
     });
 
@@ -200,7 +210,7 @@ export async function POST(request: Request) {
       username,
       email,
       full_name: fullName,
-      role: "nutritionist",
+      role: "client",
     });
 
     if (profileError) {
@@ -214,18 +224,35 @@ export async function POST(request: Request) {
       );
     }
 
-    const { error: nutritionistError } = await admin.from("nutritionists").insert({
+    const { error: clientError } = await admin.from("clients").insert({
       user_id: userId,
-      clinic_name: clinicName,
+      nutritionist_user_id: tokenRow.assigned_to_nutritionist,
     });
 
-    if (nutritionistError) {
+    if (clientError) {
       await admin.from("profiles").delete().eq("id", userId);
       await admin.auth.admin.deleteUser(userId);
       return NextResponse.json(
         {
           success: false,
-          message: nutritionistError.message,
+          message: clientError.message,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { error: clientProfileError } = await admin.from("client_profiles").insert({
+      client_user_id: userId,
+    });
+
+    if (clientProfileError) {
+      await admin.from("clients").delete().eq("user_id", userId);
+      await admin.from("profiles").delete().eq("id", userId);
+      await admin.auth.admin.deleteUser(userId);
+      return NextResponse.json(
+        {
+          success: false,
+          message: clientProfileError.message,
         },
         { status: 400 }
       );
@@ -236,12 +263,13 @@ export async function POST(request: Request) {
       .update({
         status: "used",
         used_at: new Date().toISOString(),
-        assigned_to_nutritionist: userId,
+        assigned_to_client: userId,
       })
       .eq("id", tokenRow.id);
 
     if (tokenUpdateError) {
-      await admin.from("nutritionists").delete().eq("user_id", userId);
+      await admin.from("client_profiles").delete().eq("client_user_id", userId);
+      await admin.from("clients").delete().eq("user_id", userId);
       await admin.from("profiles").delete().eq("id", userId);
       await admin.auth.admin.deleteUser(userId);
       return NextResponse.json(
@@ -256,7 +284,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: true,
-        message: "Nutricionista registrado correctamente. Ya puede iniciar sesión.",
+        message: "Cliente registrado correctamente. Ya puede iniciar sesión.",
       },
       { status: 201 }
     );
