@@ -21,12 +21,8 @@ export function AdminTokenForm() {
     try {
       const response = await fetch("/api/admin/tokens/nutritionist", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          expiresInDays: Number(days),
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expiresInDays: Number(days) }),
       });
 
       const data = (await response.json()) as ApiResponse;
@@ -41,17 +37,24 @@ export function AdminTokenForm() {
     }
   }
 
+  async function copyToken() {
+    if (!result?.token) return;
+    await navigator.clipboard.writeText(result.token);
+  }
+
   return (
-    <section className="card stack">
-      <div>
-        <span className="badge">Invitación</span>
-        <h2 className="pageSectionTitle">Generar token de nutricionista</h2>
-        <p className="pageSectionSubtitle">
-          Crea una invitación con caducidad controlada para el alta de un nuevo profesional.
-        </p>
+    <section className="sectionCard stack">
+      <div className="panelHeader">
+        <div>
+          <span className="badge">Invitación</span>
+          <h2 className="pageSectionTitle">Generar token de nutricionista</h2>
+          <p className="pageSectionSubtitle">
+            Crea una invitación con caducidad controlada para el alta de un nuevo profesional.
+          </p>
+        </div>
       </div>
 
-      <form className="grid cols-2" onSubmit={handleSubmit}>
+      <form className="formGrid" onSubmit={handleSubmit}>
         <div className="field">
           <label htmlFor="expiresInDays">Caducidad en días</label>
           <input
@@ -64,7 +67,6 @@ export function AdminTokenForm() {
             required
           />
         </div>
-
         <div className="field" style={{ alignSelf: "end" }}>
           <button type="submit" disabled={loading}>
             {loading ? "Generando..." : "Generar token"}
@@ -72,12 +74,23 @@ export function AdminTokenForm() {
         </div>
       </form>
 
-      {result && (
-        <p className={result.success ? "success" : "error"}>
-          {result.message}
-          {result.token ? ` ${result.token}` : ""}
-        </p>
-      )}
+      {result ? (
+        result.success && result.token ? (
+          <div className="tokenResult">
+            <div>
+              <p className="success" style={{ marginBottom: 0 }}>{result.message}</p>
+            </div>
+            <div className="tokenCode">{result.token}</div>
+            <div className="actionRow">
+              <button className="secondary" type="button" onClick={copyToken}>
+                Copiar token
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="error">{result.message}</p>
+        )
+      ) : null}
     </section>
   );
 }

@@ -44,18 +44,12 @@ export function RegisterNutritionistForm() {
     }
 
     if (!isValidEmail(cleanEmail)) {
-      setMessage({
-        success: false,
-        message: "Introduce un email válido.",
-      });
+      setMessage({ success: false, message: "Introduce un email válido." });
       return;
     }
 
     if (!isValidPassword(password)) {
-      setMessage({
-        success: false,
-        message: "La contraseña debe tener al menos 8 caracteres.",
-      });
+      setMessage({ success: false, message: "La contraseña debe tener al menos 8 caracteres." });
       return;
     }
 
@@ -87,16 +81,12 @@ export function RegisterNutritionistForm() {
         setEmail("");
         setPassword("");
         setToken("");
-
-        setTimeout(() => {
-          router.push("/login");
-        }, 1200);
+        setTimeout(() => router.push("/login"), 1200);
       }
     } catch (error) {
       setMessage({
         success: false,
-        message:
-          error instanceof Error ? error.message : "No se pudo completar el registro.",
+        message: error instanceof Error ? error.message : "No se pudo completar el registro.",
       });
     } finally {
       setLoading(false);
@@ -105,89 +95,87 @@ export function RegisterNutritionistForm() {
 
   return (
     <form className="stack" onSubmit={handleSubmit}>
-      <div className="field">
-        <label htmlFor="username">Usuario</label>
-        <input
-          id="username"
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
-          autoComplete="username"
-          placeholder="maria.nutri"
-          required
-        />
-        <small>
-          Se guardará como <strong>{normalizedUsername || "usuario"}</strong>
-        </small>
-      </div>
+      <div className="formGrid">
+        <div className="field">
+          <label htmlFor="username">Usuario</label>
+          <input
+            id="username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            autoComplete="username"
+            placeholder="maria.nutri"
+            required
+          />
+          <small>Se guardará como <strong>{normalizedUsername || "usuario"}</strong></small>
+        </div>
 
-      <div className="field">
-        <label htmlFor="fullName">Nombre completo</label>
-        <input
-          id="fullName"
-          value={fullName}
-          onChange={(event) => setFullName(event.target.value)}
-          autoComplete="name"
-          placeholder="María López"
-          required
-        />
-      </div>
+        <div className="field">
+          <label htmlFor="fullName">Nombre completo</label>
+          <input
+            id="fullName"
+            value={fullName}
+            onChange={(event) => setFullName(event.target.value)}
+            autoComplete="name"
+            placeholder="María López"
+            required
+          />
+        </div>
 
-      <div className="field">
-        <label htmlFor="clinicName">Clínica</label>
-        <input
-          id="clinicName"
-          value={clinicName}
-          onChange={(event) => setClinicName(event.target.value)}
-          placeholder="Clínica Nexo"
-          required
-        />
-      </div>
+        <div className="field">
+          <label htmlFor="clinicName">Clínica</label>
+          <input
+            id="clinicName"
+            value={clinicName}
+            onChange={(event) => setClinicName(event.target.value)}
+            placeholder="Clínica Nexo"
+            required
+          />
+        </div>
 
-      <div className="field">
-        <label htmlFor="email">Email interno</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          autoComplete="email"
-          placeholder="maria@clinica.com"
-          required
-        />
-      </div>
+        <div className="field">
+          <label htmlFor="email">Email interno</label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="email"
+            placeholder="maria@clinica.com"
+            required
+          />
+        </div>
 
-      <div className="field">
-        <label htmlFor="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          autoComplete="new-password"
-          placeholder="Mínimo 8 caracteres"
-          minLength={8}
-          required
-        />
-      </div>
+        <div className="field">
+          <label htmlFor="password">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="new-password"
+            placeholder="Mínimo 8 caracteres"
+            minLength={8}
+            required
+          />
+        </div>
 
-      <div className="field">
-        <label htmlFor="token">Token de invitación</label>
-        <input
-          id="token"
-          value={token}
-          onChange={(event) => setToken(event.target.value)}
-          placeholder="NEXO-NUTRI-XXXXXXXXXXXX"
-          required
-        />
+        <div className="field">
+          <label htmlFor="token">Token de invitación</label>
+          <input
+            id="token"
+            value={token}
+            onChange={(event) => setToken(event.target.value)}
+            placeholder="NEXO-NUTRI-XXXXXXXXXXXX"
+            required
+          />
+        </div>
       </div>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Registrando..." : "Crear cuenta"}
+        {loading ? "Registrando..." : "Crear cuenta profesional"}
       </button>
 
-      {message && (
-        <p className={message.success ? "success" : "error"}>{message.message}</p>
-      )}
+      {message ? <p className={message.success ? "success" : "error"}>{message.message}</p> : null}
     </form>
   );
 }

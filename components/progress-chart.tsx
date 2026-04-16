@@ -18,9 +18,19 @@ type ChartPoint = {
   value: number;
 };
 
-const METRICS: Record<MetricKey, { label: string; unit: string; color: string }> = {
-  weight_kg: { label: "Peso", unit: "kg", color: "#0f4c5c" },
-  body_fat_pct: { label: "% grasa", unit: "%", color: "#1f9d8b" },
+const METRICS: Record<MetricKey, { label: string; unit: string; color: string; gradient: string }> = {
+  weight_kg: {
+    label: "Peso",
+    unit: "kg",
+    color: "#5da8ff",
+    gradient: "rgba(93, 168, 255, 0.16)",
+  },
+  body_fat_pct: {
+    label: "% grasa",
+    unit: "%",
+    color: "#f1c84b",
+    gradient: "rgba(241, 200, 75, 0.16)",
+  },
 };
 
 function formatShortDate(value: string) {
@@ -28,6 +38,14 @@ function formatShortDate(value: string) {
     day: "2-digit",
     month: "2-digit",
   });
+}
+
+function formatMetric(value: number | null, unit: string) {
+  if (value === null || Number.isNaN(value)) {
+    return "-";
+  }
+
+  return `${value.toFixed(1)} ${unit}`;
 }
 
 function roundValue(value: number) {
@@ -68,26 +86,29 @@ export function ProgressChart({ entries }: { entries: EntryPoint[] }) {
     const padding = Math.max(spread * 0.2, metric === "weight_kg" ? 0.8 : 0.5);
 
     const yMin = scaleMode === "dynamic" ? min - padding : 0;
-    const yMax = scaleMode === "dynamic" ? max + padding : max + padding;
+    const yMax = max + padding;
     const safeMin = Number.isFinite(yMin) ? yMin : 0;
     const safeMax = Number.isFinite(yMax) && yMax > safeMin ? yMax : safeMin + 1;
 
-    const width = 720;
-    const height = 320;
-    const left = 56;
+    const width = 760;
+    const height = 340;
+    const left = 58;
     const right = 20;
-    const top = 24;
-    const bottom = 44;
+    const top = 28;
+    const bottom = 46;
     const innerWidth = width - left - right;
     const innerHeight = height - top - bottom;
-
     const xStep = points.length > 1 ? innerWidth / (points.length - 1) : innerWidth / 2;
+
     const mapY = (value: number) => top + ((safeMax - value) / (safeMax - safeMin)) * innerHeight;
 
     const coordinates = points.map((point, index) => {
       const x = points.length === 1 ? left + innerWidth / 2 : left + xStep * index;
-      const y = mapY(point.value);
-      return { ...point, x, y };
+      return {
+        ...point,
+        x,
+        y: mapY(point.value),
+      };
     });
 
     const polyline = coordinates.map((point) => `${point.x},${point.y}`).join(" ");
@@ -98,8 +119,6 @@ export function ProgressChart({ entries }: { entries: EntryPoint[] }) {
     const delta = first !== null && last !== null ? roundValue(last - first) : null;
 
     return {
-      safeMin: roundValue(safeMin),
-      safeMax: roundValue(safeMax),
       coordinates,
       polyline,
       area,
@@ -107,33 +126,48 @@ export function ProgressChart({ entries }: { entries: EntryPoint[] }) {
       first,
       last,
       delta,
+      safeMin: roundValue(safeMin),
+      safeMax: roundValue(safeMax),
       width,
       height,
       left,
-      innerHeight,
+      right,
       top,
+      bottom,
+      innerHeight,
+      innerWidth,
     };
   }, [metric, points, scaleMode]);
 
-  if (!points.length || !chart) {
+  const metricConfig = METRICS[metric];
+
+  if (!chart || !points.length) {
     return (
-      <div className="chartEmpty">
-        No hay datos suficientes para dibujar una gráfica. En cuanto existan registros de
-        seguimiento, aquí verás la evolución y la escala se ajustará automáticamente.
+      <div className="chartWrap">
+        <div className="panelHeader">
+          <div>
+            <h2 className="pageSectionTitle">Evolución del progreso</h2>
+            <p className="pageSectionSubtitle">
+              Aquí aparecerá la gráfica en cuanto existan entradas de seguimiento.
+            </p>
+          </div>
+        </div>
+        <div className="chartEmpty">
+          Todavía no hay datos suficientes para dibujar la gráfica. Cuando el nutricionista o el
+          cliente registren mediciones, el eje se ajustará automáticamente para mostrar bien la
+          evolución real.
+        </div>
       </div>
     );
   }
 
-  const metricConfig = METRICS[metric];
-
   return (
     <div className="chartWrap">
-      <div className="panelHeader">
+      <div className="chartToolbar">
         <div>
-          <h3 className="pageSectionTitle">Evolución del progreso</h3>
+          <h2 className="pageSectionTitle">Evolución del progreso</h2>
           <p className="pageSectionSubtitle">
-            La gráfica puede reescalar el eje vertical según el rango real de valores para
-            mostrar mejor el avance.
+            La escala puede ser dinámica o arrancar desde cero para interpretar mejor el cambio.
           </p>
         </div>
         <div className="stack" style={{ gap: 10 }}>
@@ -162,71 +196,90 @@ export function ProgressChart({ entries }: { entries: EntryPoint[] }) {
               className={scaleMode === "zero" ? "" : "inactive"}
               onClick={() => setScaleMode("zero")}
             >
-              Escala desde cero
+              Desde cero
             </button>
           </div>
         </div>
       </div>
 
-      <div className="chartShell">
-        <svg viewBox={`0 0 ${chart.width} ${chart.height}`} className="chartSvg" role="img" aria-label={`Gráfica de ${metricConfig.label}`}>
-          {[0, 0.5, 1].map((factor, index) => {
-            const y = chart.top + chart.innerHeight * factor;
-            return (
-              <g key={index}>
-                <line x1={chart.left} y1={y} x2={chart.width - 20} y2={y} stroke="rgba(15, 23, 42, 0.08)" strokeWidth="1" />
-                <text x="8" y={y + 4} className="yAxisLabel">
-                  {chart.axisValues[index]} {metricConfig.unit}
-                </text>
-              </g>
-            );
-          })}
-
-          <polygon points={chart.area} fill={metric === "weight_kg" ? "rgba(15, 76, 92, 0.10)" : "rgba(31, 157, 139, 0.12)"} />
-          <polyline
-            points={chart.polyline}
-            fill="none"
-            stroke={metricConfig.color}
-            strokeWidth="4"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-
-          {chart.coordinates.map((point) => (
-            <g key={point.id}>
-              <circle cx={point.x} cy={point.y} r="5.5" fill={metricConfig.color} />
-              <text x={point.x} y={chart.height - 14} textAnchor="middle" className="xAxisLabel">
-                {point.label}
-              </text>
-            </g>
-          ))}
-        </svg>
+      <div className="chartLegend">
+        <div className="legendItem">
+          <span className="legendDot" style={{ background: metricConfig.color }} />
+          {metricConfig.label}
+        </div>
+        <div className="legendItem">Rango {formatMetric(chart.safeMin, metricConfig.unit)} - {formatMetric(chart.safeMax, metricConfig.unit)}</div>
       </div>
 
-      <div className="chartMeta">
-        <div className="chartMetaBox">
-          <strong>Escala actual</strong>
-          <div className="muted">
-            {chart.safeMin} {metricConfig.unit} a {chart.safeMax} {metricConfig.unit}
-          </div>
+      <svg
+        className="chartSvg"
+        viewBox={`0 0 ${chart.width} ${chart.height}`}
+        role="img"
+        aria-label={`Gráfica de ${metricConfig.label}`}
+      >
+        <defs>
+          <linearGradient id={`nexo-gradient-${metric}`} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor={metricConfig.gradient} />
+            <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+          </linearGradient>
+        </defs>
+
+        {chart.axisValues.map((axisValue) => {
+          const y =
+            chart.top +
+            ((chart.safeMax - axisValue) / (chart.safeMax - chart.safeMin || 1)) * chart.innerHeight;
+
+          return (
+            <g key={axisValue}>
+              <line
+                x1={chart.left}
+                y1={y}
+                x2={chart.width - chart.right}
+                y2={y}
+                stroke="rgba(148, 163, 184, 0.18)"
+                strokeDasharray="6 8"
+              />
+              <text x={8} y={y + 4} className="axisLabel">
+                {axisValue.toFixed(1)}
+              </text>
+            </g>
+          );
+        })}
+
+        <polygon fill={`url(#nexo-gradient-${metric})`} points={chart.area} />
+        <polyline
+          fill="none"
+          stroke={metricConfig.color}
+          strokeWidth="4"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          points={chart.polyline}
+        />
+
+        {chart.coordinates.map((point) => (
+          <g key={point.id}>
+            <circle cx={point.x} cy={point.y} r="6" fill={metricConfig.color} />
+            <circle cx={point.x} cy={point.y} r="12" fill={metricConfig.gradient} />
+            <text x={point.x} y={chart.height - 12} textAnchor="middle" className="axisLabel">
+              {point.label}
+            </text>
+          </g>
+        ))}
+      </svg>
+
+      <div className="chartSummary">
+        <div className="summaryTile">
+          <strong>{formatMetric(chart.first, metricConfig.unit)}</strong>
+          <span>Primer valor</span>
         </div>
-        <div className="chartMetaBox">
-          <strong>Primer registro</strong>
-          <div className="muted">
-            {roundValue(chart.first ?? 0)} {metricConfig.unit}
-          </div>
+        <div className="summaryTile">
+          <strong>{formatMetric(chart.last, metricConfig.unit)}</strong>
+          <span>Último valor</span>
         </div>
-        <div className="chartMetaBox">
-          <strong>Último registro</strong>
-          <div className="muted">
-            {roundValue(chart.last ?? 0)} {metricConfig.unit}
-          </div>
-        </div>
-        <div className="chartMetaBox">
-          <strong>Variación</strong>
-          <div className="muted">
-            {chart.delta !== null ? `${chart.delta > 0 ? "+" : ""}${chart.delta} ${metricConfig.unit}` : "-"}
-          </div>
+        <div className="summaryTile">
+          <strong>
+            {chart.delta === null ? "-" : `${chart.delta > 0 ? "+" : ""}${chart.delta.toFixed(1)} ${metricConfig.unit}`}
+          </strong>
+          <span>Variación total</span>
         </div>
       </div>
     </div>

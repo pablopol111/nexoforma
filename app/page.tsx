@@ -1,23 +1,35 @@
 import Link from "next/link";
+import { LogoutButton } from "@/components/logout-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getCurrentUserWithProfile } from "@/lib/auth";
 import { ROLE_DASHBOARD } from "@/lib/constants";
-import { LogoutButton } from "@/components/logout-button";
 
 export default async function HomePage() {
   const session = await getCurrentUserWithProfile();
 
   return (
     <main>
-      <div className="container stack">
-        <section className="card heroCard">
+      <div className="container publicPage authShell">
+        <div className="publicTopbar">
+          <div className="brandLockup">
+            <div className="logoMark">NF</div>
+            <div className="brandText">
+              <strong>NexoForma</strong>
+              <span>Control de peso, roles separados y seguimiento visual</span>
+            </div>
+          </div>
+          <ThemeToggle />
+        </div>
+
+        <section className="heroCard stack">
+          <span className="kicker">Versión dashboard</span>
           <div className="heroGrid">
             <div className="stack">
-              <span className="kicker">NexoForma 1.0.1</span>
-              <h1 className="title">Control de peso con una presentación limpia y profesional.</h1>
+              <h1 className="title">Una interfaz más premium, clara y útil para trabajar cada día.</h1>
               <p className="subtitle">
-                Base nueva en Next.js y Supabase, con roles separados, tokens de invitación,
-                login por usuario y una experiencia visual más cuidada y coherente con la idea
-                original del proyecto.
+                La base técnica ya está limpia con Next.js y Supabase. Esta versión vuelve a poner
+                el foco en la presentación: panel lateral, bloques de resumen, contraste legible,
+                modo oscuro y modo claro, y gráficas de progreso que se reescalan según el valor real.
               </p>
               <div className="buttonRow">
                 {session ? (
@@ -32,8 +44,11 @@ export default async function HomePage() {
                     <Link className="linkCard primary" href="/login">
                       Iniciar sesión
                     </Link>
-                    <Link className="linkCard primary" href="/register/nutritionist">
+                    <Link className="linkCard" href="/register/nutritionist">
                       Alta nutricionista
+                    </Link>
+                    <Link className="linkCard" href="/register/client">
+                      Alta cliente
                     </Link>
                   </>
                 )}
@@ -41,62 +56,72 @@ export default async function HomePage() {
             </div>
 
             <div className="heroPanel stack">
-              <p style={{ margin: 0, fontWeight: 800 }}>Arquitectura actual</p>
-              <div className="infoList">
-                <div className="infoItem">
-                  <strong>Autenticación real</strong>
-                  <span>Supabase Auth con resolución interna username a email.</span>
+              <div>
+                <span className="badge secondary">Qué incluye</span>
+              </div>
+              <div className="heroChecklist">
+                <div className="heroChecklistItem">
+                  <div>
+                    <strong>Login visible por usuario y contraseña</strong>
+                    <p className="subtitle">Resolución interna de username a email con Supabase Auth.</p>
+                  </div>
                 </div>
-                <div className="infoItem">
-                  <strong>Acceso por invitación</strong>
-                  <span>Tokens diferenciados para nutricionista y cliente.</span>
+                <div className="heroChecklistItem">
+                  <div>
+                    <strong>Invitaciones controladas por token</strong>
+                    <p className="subtitle">Alta de nutricionista y cliente con separación de roles real.</p>
+                  </div>
                 </div>
-                <div className="infoItem">
-                  <strong>Seguimiento visual</strong>
-                  <span>Gráficas reescalables para interpretar mejor la evolución.</span>
+                <div className="heroChecklistItem">
+                  <div>
+                    <strong>Dashboard inspirado en interfaz profesional</strong>
+                    <p className="subtitle">Sidebar, tarjetas, tablas y gráficas mejor presentadas.</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="grid cols-3">
-          <div className="statCard">
-            <p className="statLabel">Administrador</p>
+        <section className="publicStats">
+          <article className="statCard">
+            <p className="statLabel">Admin</p>
             <p className="statValue">Tokens</p>
-            <p className="statHint">Genera invitaciones de nutricionista y controla altas.</p>
-          </div>
-          <div className="statCard">
+            <p className="statHint">Genera accesos de nutricionista y controla el estado general.</p>
+          </article>
+          <article className="statCard">
             <p className="statLabel">Nutricionista</p>
-            <p className="statValue">Pacientes</p>
-            <p className="statHint">Gestiona acceso de clientes y seguimiento de la cartera.</p>
-          </div>
-          <div className="statCard">
+            <p className="statValue">Clientes</p>
+            <p className="statHint">Gestiona altas, seguimiento y base activa de pacientes.</p>
+          </article>
+          <article className="statCard">
             <p className="statLabel">Cliente</p>
             <p className="statValue">Progreso</p>
-            <p className="statHint">Consulta la evolución visual y el histórico de registros.</p>
-          </div>
+            <p className="statHint">Consulta evolución, histórico y métricas visuales reescaladas.</p>
+          </article>
         </section>
 
-        <section className="card">
-          <div className="panelHeader">
+        <section className="surfaceBand stack">
+          <div className="surfaceBandHeader">
             <div>
-              <span className="badge">Accesos</span>
-              <h2 className="title compact">Entradas principales</h2>
+              <span className="badge">Accesos rápidos</span>
+              <h2 className="title compact">Puntos de entrada del sistema</h2>
               <p className="subtitle">
-                Usa solo el proyecto nuevo. No reutilices la versión antigua con localStorage.
+                Todo está preparado para trabajar solo sobre el proyecto nuevo. Nada depende de la
+                app antigua con localStorage.
               </p>
             </div>
           </div>
-          <div className="nav" style={{ marginTop: 18 }}>
+
+          <div className="nav">
             <Link className="linkCard" href="/login">
               Login
             </Link>
             <Link className="linkCard" href="/register/nutritionist">
-              Registro nutricionista
+              Registro de nutricionista
             </Link>
             <Link className="linkCard" href="/register/client">
-              Registro cliente
+              Registro de cliente
             </Link>
           </div>
         </section>

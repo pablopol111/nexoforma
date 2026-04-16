@@ -1,72 +1,75 @@
 import Link from "next/link";
 import { LoginForm } from "@/components/login-form";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function LoginPage() {
   return (
     <main>
-      <div className="container authContainer stack">
-        <section className="card heroCard">
-          <div className="heroGrid">
+      <div className="container publicPage authShell">
+        <div className="publicTopbar">
+          <div className="brandLockup">
+            <div className="logoMark">NF</div>
+            <div className="brandText">
+              <strong>NexoForma</strong>
+              <span>Acceso por perfil con experiencia cuidada</span>
+            </div>
+          </div>
+          <ThemeToggle />
+        </div>
+
+        <section className="heroCard stack">
+          <span className="kicker">Acceso</span>
+          <div className="authGrid">
             <div className="stack">
-              <span className="kicker">NexoForma 1.0.1</span>
-              <h1 className="title">Acceso elegante, claro y separado por perfil.</h1>
+              <h1 className="title">Elige tu perfil y entra con una experiencia más clara.</h1>
               <p className="subtitle">
-                El login vuelve a la estructura visual principal y ahora pregunta de forma
-                explícita si el acceso es de nutricionista o de cliente. Internamente el
-                sistema sigue autenticando con email y contraseña mediante Supabase Auth.
+                La pantalla de login vuelve a tener jerarquía visual: bloques limpios, contraste
+                alto y decisión explícita de si el acceso es de nutricionista o de cliente. El rol
+                visible se valida después contra el perfil real guardado en la base de datos.
               </p>
-              <div className="buttonRow">
-                <Link className="linkCard primary" href="/register/nutritionist">
-                  Alta de nutricionista
-                </Link>
-                <Link className="linkCard primary" href="/register/client">
-                  Alta de cliente
-                </Link>
-              </div>
-            </div>
-
-            <div className="heroPanel stack">
-              <p style={{ margin: 0, fontWeight: 800 }}>Qué hace el acceso</p>
-              <div className="infoList">
-                <div className="infoItem">
-                  <strong>Visible</strong>
-                  <span>Usuario y contraseña con elección del perfil.</span>
-                </div>
-                <div className="infoItem">
-                  <strong>Interno</strong>
-                  <span>Resolución de username a email antes del login real.</span>
-                </div>
-                <div className="infoItem">
-                  <strong>Seguro</strong>
-                  <span>Supabase Auth gestiona la contraseña, sin MD5 ni localStorage.</span>
+              <div className="notePanel">
+                <span className="badge secondary">Cómo funciona</span>
+                <div className="infoList">
+                  <div className="infoItem">
+                    <strong>Visible</strong>
+                    <span>Usuario y contraseña con selector de perfil.</span>
+                  </div>
+                  <div className="infoItem">
+                    <strong>Interno</strong>
+                    <span>Resolución username a email antes del sign in real.</span>
+                  </div>
+                  <div className="infoItem">
+                    <strong>Seguridad</strong>
+                    <span>Supabase Auth gestiona la autenticación, sin MD5.</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
 
-        <section className="card formCard stack">
-          <div>
-            <span className="badge secondary">Inicio de sesión</span>
-            <h2 className="title compact">Entra con el perfil correcto</h2>
-            <p className="subtitle">
-              El rol seleccionado en pantalla se comprueba contra tu perfil real antes de
-              redirigirte al panel correspondiente.
-            </p>
-          </div>
+            <section className="card authPanel stack">
+              <div>
+                <span className="badge">Inicio de sesión</span>
+                <h2 className="title compact">Accede a tu panel</h2>
+                <p className="subtitle">
+                  Si tu usuario no coincide con el perfil seleccionado, el sistema lo bloqueará con
+                  un mensaje claro.
+                </p>
+              </div>
 
-          <LoginForm />
+              <LoginForm />
 
-          <div className="nav">
-            <Link className="linkCard" href="/register/nutritionist">
-              Registro de nutricionista
-            </Link>
-            <Link className="linkCard" href="/register/client">
-              Registro de cliente
-            </Link>
-            <Link className="linkCard" href="/">
-              Volver al inicio
-            </Link>
+              <div className="nav">
+                <Link className="linkCard" href="/register/nutritionist">
+                  Alta nutricionista
+                </Link>
+                <Link className="linkCard" href="/register/client">
+                  Alta cliente
+                </Link>
+                <Link className="linkCard" href="/">
+                  Volver al inicio
+                </Link>
+              </div>
+            </section>
           </div>
         </section>
       </div>

@@ -15,15 +15,15 @@ type ApiResponse = {
 const ROLE_COPY: Record<VisibleRole, { title: string; text: string }> = {
   nutritionist: {
     title: "Soy nutricionista",
-    text: "Acceso profesional para gestión de pacientes y generación de tokens de cliente.",
+    text: "Acceso profesional para gestión de clientes, altas y seguimiento.",
   },
   client: {
     title: "Soy cliente",
-    text: "Acceso personal para revisar evolución, progreso y seguimiento de peso.",
+    text: "Acceso personal para revisar evolución, progreso y registros.",
   },
   admin: {
-    title: "Acceso de administración",
-    text: "Uso interno para creación de invitaciones de nutricionista y control general.",
+    title: "Acceso admin",
+    text: "Uso interno para tokens de nutricionista y control operativo.",
   },
 };
 
@@ -78,7 +78,7 @@ export function LoginForm() {
   return (
     <form className="stack" onSubmit={handleSubmit}>
       <div className="field">
-        <label>Selecciona tu acceso</label>
+        <label>Selecciona el acceso</label>
         <div className="roleSelector">
           {(["nutritionist", "client"] as const).map((role) => (
             <button
@@ -93,9 +93,7 @@ export function LoginForm() {
           ))}
         </div>
         <div className="roleAssist">
-          <span className="muted">
-            El acceso visible se valida después contra tu perfil real en Supabase.
-          </span>
+          <span className="muted">El acceso visible siempre se contrasta con el rol real guardado en perfiles.</span>
           <button
             type="button"
             className="ghost"
@@ -107,11 +105,11 @@ export function LoginForm() {
               }
             }}
           >
-            {showAdminOption ? "Ocultar admin" : "Acceso admin"}
+            {showAdminOption ? "Ocultar admin" : "Mostrar acceso admin"}
           </button>
         </div>
 
-        {showAdminOption && (
+        {showAdminOption ? (
           <button
             type="button"
             className={`roleButton ${selectedRole === "admin" ? "active" : ""}`}
@@ -120,7 +118,7 @@ export function LoginForm() {
             <span className="roleButtonTitle">{ROLE_COPY.admin.title}</span>
             <span className="roleButtonText">{ROLE_COPY.admin.text}</span>
           </button>
-        )}
+        ) : null}
       </div>
 
       <div className="field">
@@ -148,11 +146,13 @@ export function LoginForm() {
         />
       </div>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Entrando..." : `Entrar como ${ROLE_COPY[selectedRole].title.toLowerCase()}`}
-      </button>
+      <div className="authActions">
+        <button type="submit" disabled={loading}>
+          {loading ? "Entrando..." : `Entrar como ${ROLE_COPY[selectedRole].title.toLowerCase()}`}
+        </button>
+      </div>
 
-      {message && <p className={message.success ? "success" : "error"}>{message.message}</p>}
+      {message ? <p className={message.success ? "success" : "error"}>{message.message}</p> : null}
     </form>
   );
 }
