@@ -43,54 +43,21 @@ export function NutritionistTokenForm() {
   }
 
   return (
-    <section className="sectionCard stack">
-      <div className="panelHeader">
-        <div>
-          <span className="badge">Invitación</span>
-          <h2 className="pageSectionTitle">Generar token de cliente</h2>
-          <p className="pageSectionSubtitle">
-            Emite una invitación para registrar a un cliente dentro de tu propia cartera.
-          </p>
-        </div>
+    <section className="panel stack">
+      <div className="panelHead">
+        <h2>Nuevo token de cliente</h2>
       </div>
-
-      <form className="formGrid" onSubmit={handleSubmit}>
-        <div className="field">
-          <label htmlFor="expiresInDays">Caducidad en días</label>
-          <input
-            id="expiresInDays"
-            type="number"
-            min={1}
-            max={365}
-            value={days}
-            onChange={(event) => setDays(event.target.value)}
-            required
-          />
-        </div>
-        <div className="field" style={{ alignSelf: "end" }}>
-          <button type="submit" disabled={loading}>
-            {loading ? "Generando..." : "Generar token"}
-          </button>
-        </div>
+      <form className="inlineForm" onSubmit={handleSubmit}>
+        <input type="number" min={1} max={365} value={days} onChange={(event) => setDays(event.target.value)} required />
+        <button type="submit" disabled={loading}>{loading ? "Generando..." : "Generar"}</button>
       </form>
-
-      {result ? (
-        result.success && result.token ? (
-          <div className="tokenResult">
-            <div>
-              <p className="success" style={{ marginBottom: 0 }}>{result.message}</p>
-            </div>
-            <div className="tokenCode">{result.token}</div>
-            <div className="actionRow">
-              <button className="secondary" type="button" onClick={copyToken}>
-                Copiar token
-              </button>
-            </div>
-          </div>
-        ) : (
-          <p className="error">{result.message}</p>
-        )
+      {result?.success && result.token ? (
+        <div className="tokenBox">
+          <strong>{result.token}</strong>
+          <button className="secondary" type="button" onClick={copyToken}>Copiar</button>
+        </div>
       ) : null}
+      {result && !result.success ? <p className="error">{result.message}</p> : null}
     </section>
   );
 }

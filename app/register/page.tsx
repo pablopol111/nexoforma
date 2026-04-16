@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { LoginForm } from "@/components/login-form";
+import { RegisterForm } from "@/components/register-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <main className="authPage">
       <div className="authWrap narrow">
@@ -18,11 +18,11 @@ export default function LoginPage() {
         </div>
         <section className="authCard stack">
           <div className="stack introText compact">
-            <h1>Iniciar sesión</h1>
-            <p>Un paso más hacia tu mejor versión.</p>
+            <h1>Crear cuenta</h1>
+            <p>Tu token marcará el camino.</p>
           </div>
-          <LoginForm />
-          <Link href="/register" className="textLink">Crear cuenta</Link>
+          <RegisterForm />
+          <Link href="/login" className="textLink">Ya tengo cuenta</Link>
         </section>
       </div>
     </main>

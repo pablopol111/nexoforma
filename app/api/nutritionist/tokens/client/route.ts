@@ -11,44 +11,24 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Payload;
     const expiresInDays = Math.max(1, Math.min(365, Number(body.expiresInDays) || 7));
-
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "No autenticado.",
-        },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: "No autenticado." }, { status: 401 });
     }
 
     const admin = createAdminClient();
-    const { data: profileData } = await admin
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
+    const { data: profile } = await admin.from("profiles").select("role").eq("id", user.id).maybeSingle();
 
-    const profile = (profileData ?? null) as { role: string } | null;
-
-    if (profile?.role !== "nutritionist") {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "No autorizado.",
-        },
-        { status: 403 }
-      );
+    if (!profile || profile.role !== "nutritionist") {
+      return NextResponse.json({ success: false, message: "No autorizado." }, { status: 403 });
     }
 
     const token = generateAccessToken("CLIENT");
     const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
-
     const { error } = await admin.from("access_tokens").insert({
       token,
       token_type: "client_invite",
@@ -59,31 +39,14 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: error.message,
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, message: error.message }, { status: 400 });
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Token de cliente generado correctamente:",
-        token,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, message: "Token generado.", token }, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          error instanceof Error ? error.message : "No se pudo generar el token.",
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      message: error instanceof Error ? error.message : "No se pudo generar el token.",
+    }, { status: 500 });
   }
 }

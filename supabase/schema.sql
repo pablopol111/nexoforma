@@ -41,10 +41,9 @@ create index if not exists clients_nutritionist_user_id_idx on public.clients (n
 
 create table if not exists public.client_profiles (
   client_user_id uuid primary key references public.clients (user_id) on delete cascade,
-  age integer,
   height_cm numeric(5,2),
-  gender text,
-  notes text,
+  reference_weight_kg numeric(6,2),
+  target_weight_kg numeric(6,2),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -53,14 +52,14 @@ create table if not exists public.entries (
   id uuid primary key default gen_random_uuid(),
   client_user_id uuid not null references public.clients (user_id) on delete cascade,
   recorded_by_user_id uuid not null references public.profiles (id) on delete cascade,
+  entry_date date not null,
   weight_kg numeric(6,2) not null,
-  body_fat_pct numeric(5,2),
-  notes text,
-  recorded_at timestamptz not null default now(),
+  steps integer not null default 0,
   created_at timestamptz not null default now()
 );
 
-create index if not exists entries_client_user_id_idx on public.entries (client_user_id, recorded_at desc);
+create unique index if not exists entries_client_user_date_key on public.entries (client_user_id, entry_date);
+create index if not exists entries_client_user_id_idx on public.entries (client_user_id, entry_date desc);
 
 create table if not exists public.access_tokens (
   id uuid primary key default gen_random_uuid(),
@@ -78,25 +77,10 @@ create table if not exists public.access_tokens (
 create index if not exists access_tokens_type_status_idx on public.access_tokens (token_type, status);
 create index if not exists access_tokens_created_by_idx on public.access_tokens (created_by_user_id);
 
-create trigger set_profiles_updated_at
-before update on public.profiles
-for each row
-execute function public.set_updated_at();
-
-create trigger set_nutritionists_updated_at
-before update on public.nutritionists
-for each row
-execute function public.set_updated_at();
-
-create trigger set_clients_updated_at
-before update on public.clients
-for each row
-execute function public.set_updated_at();
-
-create trigger set_client_profiles_updated_at
-before update on public.client_profiles
-for each row
-execute function public.set_updated_at();
+create trigger set_profiles_updated_at before update on public.profiles for each row execute function public.set_updated_at();
+create trigger set_nutritionists_updated_at before update on public.nutritionists for each row execute function public.set_updated_at();
+create trigger set_clients_updated_at before update on public.clients for each row execute function public.set_updated_at();
+create trigger set_client_profiles_updated_at before update on public.client_profiles for each row execute function public.set_updated_at();
 
 alter table public.profiles enable row level security;
 alter table public.nutritionists enable row level security;
@@ -105,144 +89,14 @@ alter table public.client_profiles enable row level security;
 alter table public.entries enable row level security;
 alter table public.access_tokens enable row level security;
 
-create policy "profiles_select_own"
-on public.profiles
-for select
-to authenticated
-using (auth.uid() = id);
-
-create policy "profiles_update_own"
-on public.profiles
-for update
-to authenticated
-using (auth.uid() = id)
-with check (auth.uid() = id);
-
-create policy "nutritionists_select_own_or_admin"
-on public.nutritionists
-for select
-to authenticated
-using (
-  auth.uid() = user_id
-  or exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid()
-      and p.role = 'admin'
-  )
-);
-
-create policy "clients_select_client_or_linked_nutritionist_or_admin"
-on public.clients
-for select
-to authenticated
-using (
-  auth.uid() = user_id
-  or nutritionist_user_id = auth.uid()
-  or exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid()
-      and p.role = 'admin'
-  )
-);
-
-create policy "client_profiles_select_client_or_linked_nutritionist_or_admin"
-on public.client_profiles
-for select
-to authenticated
-using (
-  auth.uid() = client_user_id
-  or exists (
-    select 1
-    from public.clients c
-    where c.user_id = client_profiles.client_user_id
-      and c.nutritionist_user_id = auth.uid()
-  )
-  or exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid()
-      and p.role = 'admin'
-  )
-);
-
-create policy "client_profiles_update_own"
-on public.client_profiles
-for update
-to authenticated
-using (auth.uid() = client_user_id)
-with check (auth.uid() = client_user_id);
-
-create policy "entries_select_client_or_linked_nutritionist_or_admin"
-on public.entries
-for select
-to authenticated
-using (
-  auth.uid() = client_user_id
-  or exists (
-    select 1
-    from public.clients c
-    where c.user_id = entries.client_user_id
-      and c.nutritionist_user_id = auth.uid()
-  )
-  or exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid()
-      and p.role = 'admin'
-  )
-);
-
-create policy "entries_insert_client_or_linked_nutritionist"
-on public.entries
-for insert
-to authenticated
-with check (
-  auth.uid() = client_user_id
-  or exists (
-    select 1
-    from public.clients c
-    where c.user_id = entries.client_user_id
-      and c.nutritionist_user_id = auth.uid()
-  )
-);
-
-create policy "entries_update_client_or_linked_nutritionist"
-on public.entries
-for update
-to authenticated
-using (
-  auth.uid() = client_user_id
-  or exists (
-    select 1
-    from public.clients c
-    where c.user_id = entries.client_user_id
-      and c.nutritionist_user_id = auth.uid()
-  )
-)
-with check (
-  auth.uid() = client_user_id
-  or exists (
-    select 1
-    from public.clients c
-    where c.user_id = entries.client_user_id
-      and c.nutritionist_user_id = auth.uid()
-  )
-);
-
-create policy "access_tokens_select_creator_or_assigned_or_admin"
-on public.access_tokens
-for select
-to authenticated
-using (
-  created_by_user_id = auth.uid()
-  or assigned_to_nutritionist = auth.uid()
-  or assigned_to_client = auth.uid()
-  or exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid()
-      and p.role = 'admin'
-  )
-);
+create policy "profiles_select_own" on public.profiles for select to authenticated using (auth.uid() = id);
+create policy "profiles_update_own" on public.profiles for update to authenticated using (auth.uid() = id) with check (auth.uid() = id);
+create policy "nutritionists_select_own_or_admin" on public.nutritionists for select to authenticated using (auth.uid() = user_id or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
+create policy "clients_select_client_or_linked_nutritionist_or_admin" on public.clients for select to authenticated using (auth.uid() = user_id or nutritionist_user_id = auth.uid() or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
+create policy "client_profiles_select_client_or_linked_nutritionist_or_admin" on public.client_profiles for select to authenticated using (auth.uid() = client_user_id or exists (select 1 from public.clients c where c.user_id = client_profiles.client_user_id and c.nutritionist_user_id = auth.uid()) or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
+create policy "client_profiles_update_own" on public.client_profiles for update to authenticated using (auth.uid() = client_user_id) with check (auth.uid() = client_user_id);
+create policy "entries_select_client_or_linked_nutritionist_or_admin" on public.entries for select to authenticated using (auth.uid() = client_user_id or exists (select 1 from public.clients c where c.user_id = entries.client_user_id and c.nutritionist_user_id = auth.uid()) or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
+create policy "access_tokens_select_creator_or_assigned_or_admin" on public.access_tokens for select to authenticated using (created_by_user_id = auth.uid() or assigned_to_nutritionist = auth.uid() or assigned_to_client = auth.uid() or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
+create policy "access_tokens_insert_admin" on public.access_tokens for insert to authenticated with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));
+create policy "access_tokens_insert_nutritionist_client_invite" on public.access_tokens for insert to authenticated with check (token_type = 'client_invite' and created_by_user_id = auth.uid() and assigned_to_nutritionist = auth.uid() and exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'nutritionist'));
+create policy "access_tokens_update_admin" on public.access_tokens for update to authenticated using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')) with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'));

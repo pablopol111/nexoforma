@@ -4,45 +4,24 @@ import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { normalizeUsername } from "@/lib/utils";
 
-type VisibleRole = "nutritionist" | "client" | "admin";
-
 type ApiResponse = {
   success: boolean;
   message: string;
   redirectTo?: string;
 };
 
-const ROLE_COPY: Record<VisibleRole, { title: string; text: string }> = {
-  nutritionist: {
-    title: "Soy nutricionista",
-    text: "Acceso profesional para gestión de clientes, altas y seguimiento.",
-  },
-  client: {
-    title: "Soy cliente",
-    text: "Acceso personal para revisar evolución, progreso y registros.",
-  },
-  admin: {
-    title: "Acceso admin",
-    text: "Uso interno para tokens de nutricionista y control operativo.",
-  },
-};
-
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next");
-
-  const [selectedRole, setSelectedRole] = useState<VisibleRole>("nutritionist");
-  const [showAdminOption, setShowAdminOption] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<ApiResponse | null>(null);
+  const [result, setResult] = useState<ApiResponse | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
-    setMessage(null);
+    setResult(null);
 
     try {
       const response = await fetch("/api/login", {
@@ -53,20 +32,19 @@ export function LoginForm() {
         body: JSON.stringify({
           username: normalizeUsername(username),
           password,
-          next: nextPath,
-          selectedRole,
+          next: searchParams.get("next"),
         }),
       });
 
       const data = (await response.json()) as ApiResponse;
-      setMessage(data);
+      setResult(data);
 
       if (response.ok && data.redirectTo) {
         router.push(data.redirectTo);
         router.refresh();
       }
     } catch (error) {
-      setMessage({
+      setResult({
         success: false,
         message: error instanceof Error ? error.message : "No se pudo iniciar sesión.",
       });
@@ -78,61 +56,15 @@ export function LoginForm() {
   return (
     <form className="stack" onSubmit={handleSubmit}>
       <div className="field">
-        <label>Selecciona el acceso</label>
-        <div className="roleSelector">
-          {(["nutritionist", "client"] as const).map((role) => (
-            <button
-              key={role}
-              type="button"
-              className={`roleButton ${selectedRole === role ? "active" : ""}`}
-              onClick={() => setSelectedRole(role)}
-            >
-              <span className="roleButtonTitle">{ROLE_COPY[role].title}</span>
-              <span className="roleButtonText">{ROLE_COPY[role].text}</span>
-            </button>
-          ))}
-        </div>
-        <div className="roleAssist">
-          <span className="muted">El acceso visible siempre se contrasta con el rol real guardado en perfiles.</span>
-          <button
-            type="button"
-            className="ghost"
-            onClick={() => {
-              const nextValue = !showAdminOption;
-              setShowAdminOption(nextValue);
-              if (!nextValue && selectedRole === "admin") {
-                setSelectedRole("nutritionist");
-              }
-            }}
-          >
-            {showAdminOption ? "Ocultar admin" : "Mostrar acceso admin"}
-          </button>
-        </div>
-
-        {showAdminOption ? (
-          <button
-            type="button"
-            className={`roleButton ${selectedRole === "admin" ? "active" : ""}`}
-            onClick={() => setSelectedRole("admin")}
-          >
-            <span className="roleButtonTitle">{ROLE_COPY.admin.title}</span>
-            <span className="roleButtonText">{ROLE_COPY.admin.text}</span>
-          </button>
-        ) : null}
-      </div>
-
-      <div className="field">
         <label htmlFor="username">Usuario</label>
         <input
           id="username"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
           autoComplete="username"
-          placeholder="tu.usuario"
           required
         />
       </div>
-
       <div className="field">
         <label htmlFor="password">Contraseña</label>
         <input
@@ -141,18 +73,13 @@ export function LoginForm() {
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           autoComplete="current-password"
-          placeholder="Tu contraseña"
           required
         />
       </div>
-
-      <div className="authActions">
-        <button type="submit" disabled={loading}>
-          {loading ? "Entrando..." : `Entrar como ${ROLE_COPY[selectedRole].title.toLowerCase()}`}
-        </button>
-      </div>
-
-      {message ? <p className={message.success ? "success" : "error"}>{message.message}</p> : null}
+      <button type="submit" disabled={loading}>
+        {loading ? "Entrando..." : "Entrar"}
+      </button>
+      {result ? <p className={result.success ? "success" : "error"}>{result.message}</p> : null}
     </form>
   );
 }

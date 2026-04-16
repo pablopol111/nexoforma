@@ -43,3 +43,13 @@ export async function requireRole(role: UserRole) {
 
   return session;
 }
+
+export async function requireSession() {
+  const session = await getCurrentUserWithProfile();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  return session;
+}

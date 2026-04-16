@@ -37,7 +37,7 @@ export function ThemeToggle() {
 
   return (
     <button className="themeToggle" type="button" onClick={toggleTheme}>
-      {theme === "dark" ? "Modo claro" : "Modo oscuro"}
+      {theme === "dark" ? "Claro" : "Oscuro"}
     </button>
   );
 }

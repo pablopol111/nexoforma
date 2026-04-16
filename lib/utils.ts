@@ -19,5 +19,32 @@ export function formatDate(value: string | null) {
     return "-";
   }
 
-  return new Date(value).toLocaleString("es-ES");
+  return new Date(value).toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+export function formatNumber(value: number | null, fractionDigits = 1) {
+  if (value === null || Number.isNaN(value)) {
+    return "-";
+  }
+
+  return new Intl.NumberFormat("es-ES", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value);
+}
+
+export function formatSteps(value: number | null) {
+  if (value === null || Number.isNaN(value)) {
+    return "-";
+  }
+
+  return new Intl.NumberFormat("es-ES").format(value);
+}
+
+export function todayValue() {
+  return new Date().toISOString().slice(0, 10);
 }

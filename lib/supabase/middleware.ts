@@ -1,22 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
-import { getSupabasePublicEnv, getSupabaseServerEnv } from "@/lib/env";
+import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLE_DASHBOARD } from "@/lib/constants";
+import { getSupabasePublicEnv, getSupabaseServerEnv } from "@/lib/env";
 
 function isProtectedPath(pathname: string) {
-  return (
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/nutritionist") ||
-    pathname.startsWith("/client")
-  );
+  return pathname.startsWith("/admin") || pathname.startsWith("/nutritionist") || pathname.startsWith("/client");
 }
 
 function isAuthScreen(pathname: string) {
-  return pathname === "/login" || pathname.startsWith("/register/");
+  return pathname === "/login" || pathname === "/register" || pathname.startsWith("/register/");
 }
 
-function getDefaultDashboard(role: string | null | undefined) {
+function getDashboard(role: string | null | undefined) {
   return ROLE_DASHBOARD[role ?? ""] ?? "/";
 }
 
@@ -70,7 +66,6 @@ export async function updateSession(request: NextRequest) {
 
   const admin = createAdminClient();
   const { data } = await admin.from("profiles").select("role").eq("id", userId).maybeSingle();
-
   const profile = (data ?? null) as { role: string } | null;
 
   if (!profile?.role) {
@@ -82,28 +77,28 @@ export async function updateSession(request: NextRequest) {
 
   if (isAuthScreen(pathname)) {
     const targetUrl = request.nextUrl.clone();
-    targetUrl.pathname = getDefaultDashboard(profile.role);
+    targetUrl.pathname = getDashboard(profile.role);
     targetUrl.search = "";
     return NextResponse.redirect(targetUrl);
   }
 
   if (pathname.startsWith("/admin") && profile.role !== "admin") {
     const targetUrl = request.nextUrl.clone();
-    targetUrl.pathname = getDefaultDashboard(profile.role);
+    targetUrl.pathname = getDashboard(profile.role);
     targetUrl.search = "";
     return NextResponse.redirect(targetUrl);
   }
 
   if (pathname.startsWith("/nutritionist") && profile.role !== "nutritionist") {
     const targetUrl = request.nextUrl.clone();
-    targetUrl.pathname = getDefaultDashboard(profile.role);
+    targetUrl.pathname = getDashboard(profile.role);
     targetUrl.search = "";
     return NextResponse.redirect(targetUrl);
   }
 
   if (pathname.startsWith("/client") && profile.role !== "client") {
     const targetUrl = request.nextUrl.clone();
-    targetUrl.pathname = getDefaultDashboard(profile.role);
+    targetUrl.pathname = getDashboard(profile.role);
     targetUrl.search = "";
     return NextResponse.redirect(targetUrl);
   }

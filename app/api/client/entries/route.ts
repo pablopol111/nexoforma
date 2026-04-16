@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { generateAccessToken } from "@/lib/tokens";
 
 type Payload = {
-  expiresInDays?: number;
+  entryDate?: string;
+  weightKg?: number;
+  steps?: number;
 };
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Payload;
-    const expiresInDays = Math.max(1, Math.min(365, Number(body.expiresInDays) || 7));
+    const entryDate = (body.entryDate ?? "").trim();
+    const weightKg = Number(body.weightKg);
+    const steps = Number(body.steps);
+
+    if (!entryDate || Number.isNaN(weightKg) || Number.isNaN(steps)) {
+      return NextResponse.json({ success: false, message: "Fecha, peso y pasos son obligatorios." }, { status: 400 });
+    }
+
     const supabase = await createClient();
     const {
       data: { user },
@@ -23,29 +31,29 @@ export async function POST(request: Request) {
     const admin = createAdminClient();
     const { data: profile } = await admin.from("profiles").select("role").eq("id", user.id).maybeSingle();
 
-    if (!profile || profile.role !== "admin") {
+    if (!profile || profile.role !== "client") {
       return NextResponse.json({ success: false, message: "No autorizado." }, { status: 403 });
     }
 
-    const token = generateAccessToken("NUTRI");
-    const expiresAt = new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString();
-    const { error } = await admin.from("access_tokens").insert({
-      token,
-      token_type: "nutritionist_invite",
-      status: "available",
-      created_by_user_id: user.id,
-      expires_at: expiresAt,
+    const { error } = await admin.from("entries").upsert({
+      client_user_id: user.id,
+      recorded_by_user_id: user.id,
+      entry_date: entryDate,
+      weight_kg: weightKg,
+      steps,
+    }, {
+      onConflict: "client_user_id,entry_date",
     });
 
     if (error) {
       return NextResponse.json({ success: false, message: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, message: "Token generado.", token }, { status: 201 });
+    return NextResponse.json({ success: true, message: "Registro guardado." });
   } catch (error) {
     return NextResponse.json({
       success: false,
-      message: error instanceof Error ? error.message : "No se pudo generar el token.",
+      message: error instanceof Error ? error.message : "No se pudo guardar el registro.",
     }, { status: 500 });
   }
 }

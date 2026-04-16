@@ -16,7 +16,7 @@ export function LogoutButton() {
 
   return (
     <button className="secondary" type="button" onClick={handleLogout}>
-      Cerrar sesión
+      Salir
     </button>
   );
 }
