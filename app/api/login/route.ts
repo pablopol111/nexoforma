@@ -4,15 +4,24 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createRouteHandlerClient } from "@/lib/supabase/server";
 import { normalizeUsername } from "@/lib/utils";
 
+type LoginRole = "admin" | "nutritionist" | "client";
+
 type LoginPayload = {
   username?: string;
   password?: string;
   next?: string | null;
+  selectedRole?: LoginRole;
 };
 
 type ProfileLookup = {
   email: string;
-  role: string;
+  role: LoginRole;
+};
+
+const ROLE_LABEL: Record<LoginRole, string> = {
+  admin: "administración",
+  nutritionist: "nutricionista",
+  client: "cliente",
 };
 
 export async function POST(request: Request) {
@@ -20,6 +29,7 @@ export async function POST(request: Request) {
     const body = (await request.json()) as LoginPayload;
     const username = normalizeUsername(body.username ?? "");
     const password = body.password ?? "";
+    const selectedRole = body.selectedRole;
 
     if (!username || !password) {
       return NextResponse.json(
@@ -60,10 +70,21 @@ export async function POST(request: Request) {
       );
     }
 
+    if (selectedRole && profile.role !== selectedRole) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Este usuario pertenece al perfil ${ROLE_LABEL[profile.role]}. Selecciona el acceso correcto.`,
+        },
+        { status: 403 }
+      );
+    }
+
     const response = NextResponse.json({
       success: true,
       message: "Inicio de sesión correcto.",
-      redirectTo: body.next && body.next.startsWith("/") ? body.next : ROLE_DASHBOARD[profile.role] ?? "/",
+      redirectTo:
+        body.next && body.next.startsWith("/") ? body.next : ROLE_DASHBOARD[profile.role] ?? "/",
     });
 
     const supabase = await createRouteHandlerClient(response);
@@ -87,8 +108,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error ? error.message : "No se pudo iniciar sesión.",
+        message: error instanceof Error ? error.message : "No se pudo iniciar sesión.",
       },
       { status: 500 }
     );

@@ -70,28 +70,65 @@ export default async function NutritionistPage() {
     .limit(15)
     .returns<TokenRow[]>();
 
+  const totalClients = clientRows?.length ?? 0;
+  const availableTokens = tokens?.filter((token) => token.status === "available").length ?? 0;
+  const usedTokens = tokens?.filter((token) => token.status === "used").length ?? 0;
+
   return (
     <main>
       <div className="container stack">
-        <div className="card">
-          <div className="grid cols-2" style={{ alignItems: "center" }}>
-            <div>
-              <span className="badge">Nutricionista</span>
-              <h1 className="title">Panel de nutricionista</h1>
+        <section className="card heroCard">
+          <div className="heroGrid">
+            <div className="stack">
+              <span className="kicker">Nutricionista</span>
+              <h1 className="title">Gestión de clientes y altas invitadas.</h1>
               <p className="subtitle">
-                Bienvenido, {session.profile.full_name}. Clínica: {nutritionist?.clinic_name ?? "-"}
+                Bienvenido, {session.profile.full_name}. Clínica: {nutritionist?.clinic_name ?? "-"}.
+                Desde este panel puedes emitir tokens de cliente y revisar la base actual de usuarios vinculados.
               </p>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <LogoutButton />
+            <div className="heroPanel stack">
+              <div className="panelHeader">
+                <span className="badge secondary">Profesional</span>
+                <LogoutButton />
+              </div>
+              <div className="infoList">
+                <div className="infoItem"><strong>Usuario</strong><span>{session.profile.username}</span></div>
+                <div className="infoItem"><strong>Email</strong><span>{session.profile.email}</span></div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        <section className="grid cols-3">
+          <div className="statCard">
+            <p className="statLabel">Clientes asignados</p>
+            <p className="statValue">{totalClients}</p>
+            <p className="statHint">Total visible en el panel</p>
+          </div>
+          <div className="statCard">
+            <p className="statLabel">Tokens disponibles</p>
+            <p className="statValue">{availableTokens}</p>
+            <p className="statHint">Invitaciones listas para usar</p>
+          </div>
+          <div className="statCard">
+            <p className="statLabel">Tokens usados</p>
+            <p className="statValue">{usedTokens}</p>
+            <p className="statHint">Altas ya completadas</p>
+          </div>
+        </section>
 
         <NutritionistTokenForm />
 
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Clientes asignados</h2>
+        <section className="card">
+          <div className="panelHeader" style={{ marginBottom: 12 }}>
+            <div>
+              <h2 className="pageSectionTitle">Clientes asignados</h2>
+              <p className="pageSectionSubtitle">
+                Relación actual de clientes vinculados a tu perfil de nutricionista.
+              </p>
+            </div>
+          </div>
           <div className="tableWrapper">
             <table>
               <thead>
@@ -122,10 +159,17 @@ export default async function NutritionistPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
 
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Últimos tokens de cliente</h2>
+        <section className="card">
+          <div className="panelHeader" style={{ marginBottom: 12 }}>
+            <div>
+              <h2 className="pageSectionTitle">Últimos tokens de cliente</h2>
+              <p className="pageSectionSubtitle">
+                Histórico reciente de invitaciones emitidas desde este perfil profesional.
+              </p>
+            </div>
+          </div>
           <div className="tableWrapper">
             <table>
               <thead>
@@ -155,7 +199,7 @@ export default async function NutritionistPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );

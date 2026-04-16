@@ -34,8 +34,7 @@ export function AdminTokenForm() {
     } catch (error) {
       setResult({
         success: false,
-        message:
-          error instanceof Error ? error.message : "No se pudo generar el token.",
+        message: error instanceof Error ? error.message : "No se pudo generar el token.",
       });
     } finally {
       setLoading(false);
@@ -43,9 +42,16 @@ export function AdminTokenForm() {
   }
 
   return (
-    <div className="card">
-      <h2 style={{ marginTop: 0 }}>Generar token de nutricionista</h2>
-      <form className="stack" onSubmit={handleSubmit}>
+    <section className="card stack">
+      <div>
+        <span className="badge">Invitación</span>
+        <h2 className="pageSectionTitle">Generar token de nutricionista</h2>
+        <p className="pageSectionSubtitle">
+          Crea una invitación con caducidad controlada para el alta de un nuevo profesional.
+        </p>
+      </div>
+
+      <form className="grid cols-2" onSubmit={handleSubmit}>
         <div className="field">
           <label htmlFor="expiresInDays">Caducidad en días</label>
           <input
@@ -59,17 +65,19 @@ export function AdminTokenForm() {
           />
         </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Generando..." : "Generar token"}
-        </button>
+        <div className="field" style={{ alignSelf: "end" }}>
+          <button type="submit" disabled={loading}>
+            {loading ? "Generando..." : "Generar token"}
+          </button>
+        </div>
       </form>
 
       {result && (
-        <p className={result.success ? "success" : "error"} style={{ marginTop: 16 }}>
+        <p className={result.success ? "success" : "error"}>
           {result.message}
           {result.token ? ` ${result.token}` : ""}
         </p>
       )}
-    </div>
+    </section>
   );
 }

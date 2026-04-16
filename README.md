@@ -1,6 +1,16 @@
-# NexoForma
+# NexoForma 1.0.1
 
 Proyecto limpio de **NexoForma** construido con **Next.js + TypeScript + Supabase**, sin reutilizar la aplicación vieja basada en `localStorage`.
+
+## Cambios incluidos en esta versión
+
+- recuperación de una línea visual más elegante y consistente
+- login que pregunta si el acceso es de **nutricionista** o **cliente**
+- acceso de administración como opción secundaria dentro del login
+- validación del rol seleccionado antes de redirigir
+- corrección del `middleware` para evitar el error con `claims`
+- panel de cliente con **gráfica reescalable** por rango de valores
+- selector de métrica y selector de escala en la gráfica
 
 ## Qué incluye
 
@@ -10,7 +20,7 @@ Proyecto limpio de **NexoForma** construido con **Next.js + TypeScript + Supabas
 - registro de **cliente** con token
 - panel **admin** para generar tokens de nutricionista
 - panel **nutricionista** para generar tokens de cliente
-- panel **cliente**
+- panel **cliente** con gráfico de progreso
 - `middleware.ts`
 - `lib/supabase/client.ts`
 - `lib/supabase/server.ts`
@@ -43,6 +53,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_BOOTSTRAP_TOKEN=
 ```
 
+No subas `.env.local` a GitHub.
+
 ## Instalación local
 
 ```bash
@@ -67,13 +79,11 @@ Esto crea:
 - `entries`
 - `access_tokens`
 
-También crea:
+Puntos importantes del esquema:
 
-- índices
-- restricciones
-- `username` único
-- `email` único
-- RLS básico
+- `profiles` contiene `username`, `email`, `full_name` y `role`
+- `access_tokens.status` usa: `available`, `used`, `revoked`
+- `access_tokens.token_type` usa: `nutritionist_invite`, `client_invite`
 
 ### 2) Crear el usuario admin en Auth
 
@@ -120,7 +130,7 @@ Entra en:
 
 - `/login`
 
-Usa el **username** configurado en `seed_admin.sql` y la contraseña del usuario que creaste en **Authentication > Users**.
+Pulsa **Acceso admin** y usa el `username` configurado en `seed_admin.sql` junto con la contraseña del usuario creado en **Authentication > Users**.
 
 ### B. Generar token de nutricionista
 
@@ -157,7 +167,7 @@ Entra en:
 
 - `/login`
 
-Usa:
+Selecciona **Soy nutricionista** y usa:
 
 - username del nutricionista
 - contraseña del nutricionista
@@ -171,7 +181,7 @@ Desde `/nutritionist` genera un token de cliente.
 Qué hace el sistema:
 
 - crea `access_tokens.token_type = 'client_invite'`
-- deja asociado `assigned_to_nutritionist` al nutricionista actual
+- deja asociado `created_by_user_id` al nutricionista actual
 
 ### F. Registrar cliente
 
@@ -201,12 +211,20 @@ Entra en:
 
 - `/login`
 
-Usa:
+Selecciona **Soy cliente** y usa:
 
 - username del cliente
 - contraseña del cliente
 
 Deberías entrar en `/client`.
+
+### H. Probar la gráfica reescalable
+
+Para ver bien la gráfica del cliente, inserta varias entradas en `entries` con pesos diferentes. La gráfica permite:
+
+- cambiar entre **Peso** y **% grasa**
+- usar **Escala dinámica** para ampliar visualmente cambios pequeños
+- usar **Escala desde cero** para comparar contra una referencia más clásica
 
 ## Estructura principal
 
@@ -226,6 +244,14 @@ app/
   page.tsx
   register/client/page.tsx
   register/nutritionist/page.tsx
+components/
+  admin-token-form.tsx
+  login-form.tsx
+  logout-button.tsx
+  nutritionist-token-form.tsx
+  progress-chart.tsx
+  register-client-form.tsx
+  register-nutritionist-form.tsx
 lib/
   supabase/
     admin.ts
@@ -252,6 +278,7 @@ middleware.ts
 - No se usa MD5.
 - Las contraseñas las gestiona Supabase Auth.
 - Las operaciones sensibles del backend usan `SUPABASE_SERVICE_ROLE_KEY` solo en servidor.
+- La opción visible elegida en login no sustituye la validación del rol real en base de datos.
 
 ## Qué no subir
 
@@ -261,10 +288,9 @@ No subas a GitHub:
 - `.next`
 - `node_modules`
 
-## Siguiente evolución recomendada
+## Recomendación al actualizar desde una versión anterior
 
-- alta y edición de entradas de peso
-- vista de evolución del cliente
-- recuperación de contraseña
-- auditoría de tokens
-- endurecer políticas RLS si se va a abrir más lógica al cliente
+- sustituye el contenido del proyecto por esta versión
+- conserva la carpeta `.git`
+- revisa tu `.env.local`
+- rota cualquier secreto que haya podido subirse por error al repositorio

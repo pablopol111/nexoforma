@@ -53,11 +53,8 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { claims },
-  } = await supabase.auth.getClaims();
-
-  const userId = typeof claims?.sub === "string" ? claims.sub : null;
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const userId = userError ? null : userData?.user?.id ?? null;
   const pathname = request.nextUrl.pathname;
 
   if (!userId) {
@@ -72,17 +69,14 @@ export async function updateSession(request: NextRequest) {
   }
 
   const admin = createAdminClient();
-  const { data } = await admin
-    .from("profiles")
-    .select("role")
-    .eq("id", userId)
-    .maybeSingle();
+  const { data } = await admin.from("profiles").select("role").eq("id", userId).maybeSingle();
 
   const profile = (data ?? null) as { role: string } | null;
 
   if (!profile?.role) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
+    loginUrl.search = "";
     return NextResponse.redirect(loginUrl);
   }
 

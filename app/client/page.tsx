@@ -1,4 +1,5 @@
 import { LogoutButton } from "@/components/logout-button";
+import { ProgressChart } from "@/components/progress-chart";
 import { requireRole } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatDate } from "@/lib/utils";
@@ -19,6 +20,14 @@ type NutritionistProfile = {
   full_name: string;
   email: string;
 };
+
+function formatMetric(value: number | null, suffix: string) {
+  if (value === null || Number.isNaN(value)) {
+    return "-";
+  }
+
+  return `${Number(value).toFixed(1)} ${suffix}`;
+}
 
 export default async function ClientPage() {
   const session = await requireRole("client");
@@ -49,43 +58,138 @@ export default async function ClientPage() {
     .select("id, weight_kg, body_fat_pct, notes, recorded_at")
     .eq("client_user_id", session.profile.id)
     .order("recorded_at", { ascending: false })
-    .limit(10)
+    .limit(12)
     .returns<EntryRow[]>();
+
+  const latestEntry = entries?.[0] ?? null;
+  const oldestEntry = entries?.[entries.length - 1] ?? null;
+  const weightChange = latestEntry && oldestEntry ? latestEntry.weight_kg - oldestEntry.weight_kg : null;
+  const bodyFatChange =
+    latestEntry?.body_fat_pct !== null && oldestEntry?.body_fat_pct !== null
+      ? latestEntry.body_fat_pct - oldestEntry.body_fat_pct
+      : null;
 
   return (
     <main>
       <div className="container stack">
-        <div className="card">
-          <div className="grid cols-2" style={{ alignItems: "center" }}>
-            <div>
-              <span className="badge">Cliente</span>
-              <h1 className="title">Panel de cliente</h1>
-              <p className="subtitle">Bienvenido, {session.profile.full_name}.</p>
+        <section className="card heroCard">
+          <div className="heroGrid">
+            <div className="stack">
+              <span className="kicker">Cliente</span>
+              <h1 className="title">Seguimiento visual del progreso.</h1>
+              <p className="subtitle">
+                Bienvenido, {session.profile.full_name}. Tu panel recupera el estilo elegante
+                y añade una gráfica con escala dinámica para que los cambios de peso y grasa se
+                interpreten con mayor precisión.
+              </p>
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <LogoutButton />
+            <div className="heroPanel stack">
+              <div className="panelHeader">
+                <span className="badge secondary">Sesión activa</span>
+                <LogoutButton />
+              </div>
+              <div className="infoList">
+                <div className="infoItem">
+                  <strong>Usuario</strong>
+                  <span>{session.profile.username}</span>
+                </div>
+                <div className="infoItem">
+                  <strong>Email</strong>
+                  <span>{session.profile.email}</span>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Mi nutricionista</h2>
-          {nutritionistProfile ? (
-            <div className="stack">
-              <p>
-                <strong>Nombre:</strong> {nutritionistProfile.full_name}
-              </p>
-              <p>
-                <strong>Email:</strong> {nutritionistProfile.email}
+        <section className="grid cols-4">
+          <div className="statCard">
+            <p className="statLabel">Peso actual</p>
+            <p className="statValue">{formatMetric(latestEntry?.weight_kg ?? null, "kg")}</p>
+            <p className="statHint">Último registro disponible</p>
+          </div>
+          <div className="statCard">
+            <p className="statLabel">Variación de peso</p>
+            <p className="statValue">
+              {weightChange !== null ? `${weightChange > 0 ? "+" : ""}${weightChange.toFixed(1)} kg` : "-"}
+            </p>
+            <p className="statHint">Comparado con el primer registro cargado</p>
+          </div>
+          <div className="statCard">
+            <p className="statLabel">% grasa actual</p>
+            <p className="statValue">{formatMetric(latestEntry?.body_fat_pct ?? null, "%")}</p>
+            <p className="statHint">Solo si existe medición</p>
+          </div>
+          <div className="statCard">
+            <p className="statLabel">Variación % grasa</p>
+            <p className="statValue">
+              {bodyFatChange !== null ? `${bodyFatChange > 0 ? "+" : ""}${bodyFatChange.toFixed(1)} %` : "-"}
+            </p>
+            <p className="statHint">Comparado con la primera medición</p>
+          </div>
+        </section>
+
+        <section className="card">
+          <ProgressChart entries={entries ?? []} />
+        </section>
+
+        <div className="grid cols-2">
+          <section className="card stack">
+            <div>
+              <h2 className="pageSectionTitle">Mi nutricionista</h2>
+              <p className="pageSectionSubtitle">
+                Referencia del profesional asociado a tu seguimiento activo.
               </p>
             </div>
-          ) : (
-            <p>No tienes un nutricionista asociado.</p>
-          )}
+            {nutritionistProfile ? (
+              <div className="infoList">
+                <div className="infoItem">
+                  <strong>Nombre</strong>
+                  <span>{nutritionistProfile.full_name}</span>
+                </div>
+                <div className="infoItem">
+                  <strong>Email</strong>
+                  <span>{nutritionistProfile.email}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="muted">No tienes un nutricionista asociado.</p>
+            )}
+          </section>
+
+          <section className="card stack">
+            <div>
+              <h2 className="pageSectionTitle">Última observación</h2>
+              <p className="pageSectionSubtitle">
+                Resumen rápido del último seguimiento registrado.
+              </p>
+            </div>
+            {latestEntry ? (
+              <div className="infoList">
+                <div className="infoItem">
+                  <strong>Fecha</strong>
+                  <span>{formatDate(latestEntry.recorded_at)}</span>
+                </div>
+                <div className="infoItem">
+                  <strong>Notas</strong>
+                  <span>{latestEntry.notes ?? "Sin observaciones registradas."}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="muted">Todavía no hay registros de seguimiento.</p>
+            )}
+          </section>
         </div>
 
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Últimos registros</h2>
+        <section className="card">
+          <div className="panelHeader" style={{ marginBottom: 12 }}>
+            <div>
+              <h2 className="pageSectionTitle">Histórico reciente</h2>
+              <p className="pageSectionSubtitle">
+                Tabla con los últimos registros cargados para revisar la evolución punto a punto.
+              </p>
+            </div>
+          </div>
           <div className="tableWrapper">
             <table>
               <thead>
@@ -100,8 +204,8 @@ export default async function ClientPage() {
                 {(entries ?? []).map((entry) => (
                   <tr key={entry.id}>
                     <td>{formatDate(entry.recorded_at)}</td>
-                    <td>{entry.weight_kg}</td>
-                    <td>{entry.body_fat_pct ?? "-"}</td>
+                    <td>{formatMetric(entry.weight_kg, "kg")}</td>
+                    <td>{formatMetric(entry.body_fat_pct, "%")}</td>
                     <td>{entry.notes ?? "-"}</td>
                   </tr>
                 ))}
@@ -113,7 +217,7 @@ export default async function ClientPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );
