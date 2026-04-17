@@ -3,19 +3,13 @@
 import { FormEvent, useState } from "react";
 import { todayValue } from "@/lib/utils";
 
-type ApiResponse = {
-  success: boolean;
-  message: string;
-};
+type ApiResponse = { success: boolean; message: string };
 
-type Props = {
-  defaultDate?: string;
-};
-
-export function DailyEntryForm({ defaultDate = todayValue() }: Props) {
+export function DailyEntryForm({ defaultDate = todayValue() }: { defaultDate?: string }) {
   const [entryDate, setEntryDate] = useState(defaultDate);
   const [weightKg, setWeightKg] = useState("");
   const [steps, setSteps] = useState("");
+  const [comment, setComment] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ApiResponse | null>(null);
 
@@ -23,7 +17,6 @@ export function DailyEntryForm({ defaultDate = todayValue() }: Props) {
     event.preventDefault();
     setLoading(true);
     setResult(null);
-
     try {
       const response = await fetch("/api/client/entries", {
         method: "POST",
@@ -31,22 +24,18 @@ export function DailyEntryForm({ defaultDate = todayValue() }: Props) {
         body: JSON.stringify({
           entryDate,
           weightKg: Number(weightKg.replace(",", ".")),
-          steps: Number(steps),
+          steps: Number(steps.replace(",", ".")),
+          comment: comment.trim(),
         }),
       });
-
       const data = (await response.json()) as ApiResponse;
       setResult(data);
-
       if (response.ok) {
         setWeightKg("");
         setSteps("");
+        setComment("");
+        location.reload();
       }
-    } catch (error) {
-      setResult({
-        success: false,
-        message: error instanceof Error ? error.message : "No se pudo guardar la entrada.",
-      });
     } finally {
       setLoading(false);
     }
@@ -54,23 +43,15 @@ export function DailyEntryForm({ defaultDate = todayValue() }: Props) {
 
   return (
     <section className="panel stack">
-      <div className="panelHead">
-        <h2>Registro diario</h2>
-      </div>
+      <div className="panelHead"><h2>Registro diario</h2></div>
       <form className="stack" onSubmit={handleSubmit}>
-        <div className="field">
-          <label htmlFor="entryDate">Fecha</label>
-          <input id="entryDate" type="date" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} required />
+        <div className="field"><label>Fecha</label><input type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} required /></div>
+        <div className="columns two">
+          <div className="field"><label>Peso</label><input value={weightKg} onChange={(e) => setWeightKg(e.target.value)} placeholder="84,20" required /></div>
+          <div className="field"><label>Pasos</label><input value={steps} onChange={(e) => setSteps(e.target.value)} placeholder="8540,50" required /></div>
         </div>
-        <div className="field">
-          <label htmlFor="weightKg">Peso</label>
-          <input id="weightKg" value={weightKg} onChange={(event) => setWeightKg(event.target.value)} placeholder="84.2" required />
-        </div>
-        <div className="field">
-          <label htmlFor="steps">Pasos</label>
-          <input id="steps" type="number" min={0} value={steps} onChange={(event) => setSteps(event.target.value)} placeholder="9000" required />
-        </div>
-        <button type="submit" disabled={loading}>{loading ? "Guardando..." : "Guardar"}</button>
+        <div className="field"><label>Comentario</label><textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={4} /></div>
+        <button type="submit" disabled={loading}>{loading ? "Guardando..." : "Guardar registro"}</button>
       </form>
       {result ? <p className={result.success ? "success" : "error"}>{result.message}</p> : null}
     </section>

@@ -3,25 +3,16 @@
 import { useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
-
 const STORAGE_KEY = "nexoforma-theme";
 
 function getPreferredTheme(): Theme {
-  if (typeof window === "undefined") {
-    return "dark";
-  }
-
-  const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (saved === "dark" || saved === "light") {
-    return saved;
-  }
-
+  const saved = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+  if (saved === "light" || saved === "dark") return saved;
   return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
 }
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>("dark");
-
   useEffect(() => {
     const nextTheme = getPreferredTheme();
     setTheme(nextTheme);
@@ -35,9 +26,5 @@ export function ThemeToggle() {
     window.localStorage.setItem(STORAGE_KEY, nextTheme);
   }
 
-  return (
-    <button className="themeToggle" type="button" onClick={toggleTheme}>
-      {theme === "dark" ? "Claro" : "Oscuro"}
-    </button>
-  );
+  return <button className="themeIconButton" type="button" onClick={toggleTheme} aria-label="Cambiar tema">{theme === "dark" ? "☀" : "☾"}</button>;
 }

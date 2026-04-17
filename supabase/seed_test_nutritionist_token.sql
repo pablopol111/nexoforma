@@ -10,10 +10,6 @@ values (
   'nutritionist_invite',
   'available',
   null,
-  now() + interval '7 days'
+  now() + interval '30 days'
 )
-on conflict (token) do update
-set
-  token_type = excluded.token_type,
-  status = excluded.status,
-  expires_at = excluded.expires_at;
+on conflict (token) do nothing;

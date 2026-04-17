@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { RegisterForm } from "@/components/register-form";
-import { ThemeToggle } from "@/components/theme-toggle";
+import Link from 'next/link';
+import { RegisterForm } from '@/components/register-form';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function RegisterPage() {
   return (
@@ -9,20 +9,17 @@ export default function RegisterPage() {
         <div className="authTopbar">
           <Link href="/" className="brandLockup cleanLink">
             <div className="logoMark">NF</div>
-            <div>
-              <strong>NexoForma</strong>
-              <span>donde empieza el cambio</span>
-            </div>
+            <div><strong>NexoForma</strong><span>donde empieza el camino</span></div>
           </Link>
           <ThemeToggle />
         </div>
         <section className="authCard stack">
           <div className="stack introText compact">
-            <h1>Crear cuenta</h1>
-            <p>Tu token marcará el camino.</p>
+            <h1>Registrarse</h1>
+            <p>Tu token abrirá el acceso correcto y marcará el camino dentro de la plataforma.</p>
           </div>
           <RegisterForm />
-          <Link href="/login" className="textLink">Ya tengo cuenta</Link>
+          <Link href="/login" className="textLink">Iniciar sesión</Link>
         </section>
       </div>
     </main>

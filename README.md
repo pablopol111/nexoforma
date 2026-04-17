@@ -1,71 +1,40 @@
-# NexoForma 1.3
+# NexoForma
 
-NexoForma usa Next.js, TypeScript y Supabase.
+Proyecto Next.js + TypeScript + Supabase alineado con la arquitectura nueva de NexoForma.
 
-## Variables
+## Variables de entorno
 
-Crea `.env.local` en la raíz con:
+Crea `.env.local` con:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-ADMIN_BOOTSTRAP_TOKEN=
 ```
 
-## Instalación
+## Puesta en marcha
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Supabase
+## Base de datos
 
 1. Ejecuta `supabase/schema.sql`
-2. Crea un usuario en Authentication con email `admin@nexoforma.local`
+2. Crea en Authentication:
+   - `admin@nexoforma.local`
+   - `nutri.demo@nexoforma.local`
+   - `cliente.demo@nexoforma.local`
 3. Ejecuta `supabase/seed_admin.sql`
-4. Ejecuta `supabase/seed_test_nutritionist_token.sql`
+4. Ejecuta `supabase/seed_demo.sql`
 
-## Flujo
+## Usuarios demo
 
-### Admin
+- Admin: `admin@nexoforma.local` y la contraseña que le pongas
+- Nutricionista: usuario `nutricionista` y contraseña `nutri10`
+- Cliente: usuario `clientecliente` y contraseña `cliente11`
 
-- Entra con usuario `admin`
-- Genera tokens de nutricionista
+## Estado de esta entrega
 
-### Registro nutricionista
-
-- Abre `/register`
-- Usa un token `nutritionist_invite`
-- Añade clínica
-- Inicia sesión
-
-### Registro cliente
-
-- El nutricionista genera un token de cliente
-- El cliente abre `/register`
-- Usa el token `client_invite`
-- Inicia sesión
-
-### Cliente
-
-- Edita perfil
-- Guarda altura, peso de referencia y peso objetivo
-- Registra fecha, peso y pasos
-- Consulta la evolución
-
-### Nutricionista
-
-- Ve su cartera de clientes
-- Abre cada perfil
-- Consulta progreso e histórico
-
-## Estructura
-
-- `/login`
-- `/register`
-- `/admin`
-- `/nutritionist`
-- `/nutritionist/clients/[clientId]`
-- `/client`
+Esta versión deja el proyecto alineado con la base de datos final, el registro único por token, el login por usuario y la demo sembrada. La parte de siluetas corporales queda preparada con placeholder visual para evolucionar hacia una representación más realista en la siguiente iteración.

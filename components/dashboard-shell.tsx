@@ -4,24 +4,26 @@ import { LogoutButton } from "@/components/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { UserRole } from "@/lib/types";
 
-type NavItem = {
-  href: string;
-  label: string;
-};
+type NavItem = { href: string; label: string };
 
 const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   admin: [
-    { href: "/admin", label: "Panel" },
-    { href: "/login", label: "Acceso" },
-  ],
-  nutritionist: [
-    { href: "/nutritionist", label: "Panel" },
+    { href: "/admin", label: "Dashboard" },
     { href: "/register", label: "Registro" },
   ],
-  client: [{ href: "/client", label: "Panel" }],
+  nutritionist: [
+    { href: "/nutritionist", label: "Dashboard" },
+    { href: "/register", label: "Registro" },
+  ],
+  client: [
+    { href: "/client", label: "Dashboard" },
+    { href: "/client#perfil", label: "Perfil" },
+    { href: "/client#registros", label: "Registros" },
+    { href: "/client#historial", label: "Histórico" },
+  ],
 };
 
-type DashboardShellProps = {
+type Props = {
   role: UserRole;
   activeHref: string;
   pageTitle: string;
@@ -32,16 +34,7 @@ type DashboardShellProps = {
   children: ReactNode;
 };
 
-export function DashboardShell({
-  role,
-  activeHref,
-  pageTitle,
-  pageDescription,
-  profileName,
-  profileSubtext,
-  actions,
-  children,
-}: DashboardShellProps) {
+export function DashboardShell({ role, activeHref, pageTitle, pageDescription, profileName, profileSubtext, actions, children }: Props) {
   return (
     <main className="appShell">
       <aside className="sidebar">
@@ -49,7 +42,7 @@ export function DashboardShell({
           <div className="logoMark">NF</div>
           <div>
             <strong>NexoForma</strong>
-            <span>{role === "admin" ? "Admin" : role === "nutritionist" ? "Nutrición" : "Cliente"}</span>
+            <span>{role === "admin" ? "Administración" : role === "nutritionist" ? "Nutrición" : "Cliente"}</span>
           </div>
         </div>
         <nav className="sidebarNav">

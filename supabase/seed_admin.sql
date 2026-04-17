@@ -3,19 +3,21 @@ insert into public.profiles (
   username,
   email,
   full_name,
-  role
+  role,
+  status
 )
 select
   au.id,
   'admin',
   au.email,
   'Administrador NexoForma',
-  'admin'
+  'admin',
+  'active'
 from auth.users au
 where au.email = 'admin@nexoforma.local'
 on conflict (id) do update
-set
-  username = excluded.username,
-  email = excluded.email,
-  full_name = excluded.full_name,
-  role = excluded.role;
+set username = excluded.username,
+    email = excluded.email,
+    full_name = excluded.full_name,
+    role = excluded.role,
+    status = excluded.status;

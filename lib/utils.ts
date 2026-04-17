@@ -15,36 +15,35 @@ export function isValidPassword(value: string) {
 }
 
 export function formatDate(value: string | null) {
-  if (!value) {
-    return "-";
-  }
-
-  return new Date(value).toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-export function formatNumber(value: number | null, fractionDigits = 1) {
-  if (value === null || Number.isNaN(value)) {
-    return "-";
-  }
-
-  return new Intl.NumberFormat("es-ES", {
-    minimumFractionDigits: fractionDigits,
-    maximumFractionDigits: fractionDigits,
-  }).format(value);
+export function formatDateTime(value: string | null) {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-export function formatSteps(value: number | null) {
-  if (value === null || Number.isNaN(value)) {
-    return "-";
-  }
+export function formatNumber(value: number | null | undefined, fractionDigits = 1) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "-";
+  return new Intl.NumberFormat("es-ES", { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits }).format(value);
+}
 
-  return new Intl.NumberFormat("es-ES").format(value);
+export function formatSteps(value: number | null | undefined) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "-";
+  return new Intl.NumberFormat("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
 }
 
 export function todayValue() {
   return new Date().toISOString().slice(0, 10);
+}
+
+export function toNullableNumber(value: string) {
+  if (!value.trim()) return null;
+  const parsed = Number(value.replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function makeFullName(firstName?: string | null, lastName?: string | null) {
+  return [firstName, lastName].filter(Boolean).join(" ").trim();
 }
