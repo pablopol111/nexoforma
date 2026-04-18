@@ -19,6 +19,11 @@ export function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+export function formatShortDate(value: string | null) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("es-ES", { weekday: "short", day: "2-digit", month: "2-digit" });
+}
+
 export function formatDateTime(value: string | null) {
   if (!value) return "-";
   return new Date(value).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -46,4 +51,30 @@ export function toNullableNumber(value: string) {
 
 export function makeFullName(firstName?: string | null, lastName?: string | null) {
   return [firstName, lastName].filter(Boolean).join(" ").trim();
+}
+
+export function daysSinceDate(value: string | null) {
+  if (!value) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(value);
+  target.setHours(0, 0, 0, 0);
+  const diff = today.getTime() - target.getTime();
+  return Math.max(0, Math.floor(diff / 86_400_000));
+}
+
+export function isProfileCompleteForMeasurements(profile: {
+  first_name?: string | null;
+  last_name?: string | null;
+  height_cm?: number | null;
+  reference_weight_kg?: number | null;
+  target_weight_kg?: number | null;
+}) {
+  return Boolean(
+    (profile.first_name ?? "").trim() &&
+    (profile.last_name ?? "").trim() &&
+    profile.height_cm &&
+    profile.reference_weight_kg &&
+    profile.target_weight_kg,
+  );
 }

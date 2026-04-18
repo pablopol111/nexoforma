@@ -7,9 +7,9 @@ type BodyPanelProps = {
   ready: boolean;
 };
 
-function BodyCard({ title, weight }: { title: string; weight: number | null }) {
+function BodyCard({ title, weight, tone }: { title: string; weight: number | null; tone: "reference" | "current" | "target" }) {
   return (
-    <article className="bodyCard">
+    <article className={`bodyCard ${tone}`}>
       <div className="bodyFigure" aria-hidden>
         <div className="bodyFront" />
         <div className="bodySide" />
@@ -22,16 +22,19 @@ function BodyCard({ title, weight }: { title: string; weight: number | null }) {
 
 export function BodyPanel({ referenceWeight, currentWeight, predictedWeight, ready }: BodyPanelProps) {
   if (!ready) {
-    return <section className="panel bodyPending"><h2>Cuerpo</h2><p>Completa tu perfil para visualizar tu progreso corporal.</p></section>;
+    return <section className="panel bodyPending"><h2>Cuerpo</h2><p>Completa tu perfil con nombre, apellidos, altura y pesos para visualizar la comparativa corporal.</p></section>;
   }
 
   return (
     <section className="panel stack">
-      <div className="panelHead"><h2>Cuerpo</h2></div>
-      <div className="bodyGrid">
-        <BodyCard title="Referencia" weight={referenceWeight} />
-        <BodyCard title="Actual" weight={currentWeight} />
-        <BodyCard title="Previsto" weight={predictedWeight} />
+      <div className="panelHead split">
+        <h2>Cuerpo</h2>
+        <span className="chip">Referencia · actual · previsto</span>
+      </div>
+      <div className="bodyGrid premiumBodyGrid">
+        <BodyCard title="Referencia" weight={referenceWeight} tone="reference" />
+        <BodyCard title="Actual" weight={currentWeight} tone="current" />
+        <BodyCard title="Previsto" weight={predictedWeight} tone="target" />
       </div>
       <div className="legendRow"><span>Cintura</span><span>Cadera</span><span>Pecho</span><span>Brazo</span><span>Muslo</span></div>
     </section>
