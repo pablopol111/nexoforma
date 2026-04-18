@@ -200,7 +200,7 @@ export default async function ClientPage() {
 
       <CalendarSummary dailyEntries={entries} measurementEntries={measurements} />
       <ProgressChart entries={entries} />
-      <BodyPanel referenceWeight={clientProfile?.reference_weight_kg ?? null} currentWeight={latestEntry?.weight_kg ?? latestMeasurement?.weight_kg ?? null} predictedWeight={predictedWeight} ready={readyForBody} />
+      <BodyPanel referenceWeight={clientProfile?.reference_weight_kg ?? null} currentWeight={latestEntry?.weight_kg ?? latestMeasurement?.weight_kg ?? null} predictedWeight={predictedWeight} ready={readyForBody} referenceMeasurements={measurements[1] ?? null} currentMeasurements={latestMeasurement} />
       <MeasurementRadar entries={measurements} targetWeight={clientProfile?.target_weight_kg ?? null} />
 
       <div id="registros" className="columns two">

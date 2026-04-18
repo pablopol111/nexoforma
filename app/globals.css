@@ -1095,3 +1095,221 @@ th {
     align-items: flex-start;
   }
 }
+
+
+.wrapOnMobile {
+  flex-wrap: wrap;
+}
+
+.compactStack {
+  gap: 0.4rem;
+}
+
+.actionCluster {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.actionCluster.alignEnd {
+  justify-content: flex-end;
+}
+
+.tokenHistoryLayout {
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+}
+
+.tokenHistoryWrap {
+  max-height: 360px;
+}
+
+.tableCode {
+  display: inline-block;
+  padding: 0.3rem 0.5rem;
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 1px solid var(--line);
+}
+
+.statusPill.available,
+.chip.ok {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+}
+
+.statusPill.used {
+  color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 14%, transparent);
+}
+
+.statusPill.revoked,
+.chip.warn {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+}
+
+.compactChartPanel .chartSvg {
+  max-height: 220px;
+}
+
+.humanoidGrid {
+  align-items: stretch;
+}
+
+.bodyCard {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.humanoidFigure {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-soft) 92%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
+  border: 1px solid var(--line);
+}
+
+.humanFigure {
+  width: 100%;
+  max-width: 160px;
+  height: auto;
+}
+
+.humanFigure .figureMain,
+.humanFigure .figureLimb {
+  fill: color-mix(in srgb, var(--text) 82%, transparent);
+  opacity: 0.9;
+}
+
+.humanFigure.reference .figureMain,
+.humanFigure.reference .figureLimb {
+  fill: color-mix(in srgb, var(--accent-2) 74%, white 8%);
+}
+
+.humanFigure.current .figureMain,
+.humanFigure.current .figureLimb {
+  fill: color-mix(in srgb, var(--accent) 78%, white 5%);
+}
+
+.humanFigure.target .figureMain,
+.humanFigure.target .figureLimb {
+  fill: color-mix(in srgb, var(--success) 74%, white 10%);
+}
+
+.bodyCardMeta strong {
+  font-size: 1.05rem;
+}
+
+.bodyMetricList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.bodyMetricList span {
+  font-size: 0.8rem;
+  padding: 0.32rem 0.55rem;
+  border-radius: 999px;
+  background: var(--bg-soft);
+}
+
+.measureRadarPanel {
+  overflow: hidden;
+}
+
+.radarLayout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.radarCanvasWrap {
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-soft) 94%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
+  border: 1px solid var(--line);
+}
+
+.radarSvg {
+  width: min(100%, 320px);
+  height: auto;
+  overflow: visible;
+}
+
+.radarGrid,
+.radarAxis {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-soft) 24%, transparent);
+  stroke-width: 1;
+}
+
+.radarAxisLabel {
+  fill: var(--text-soft);
+  font-size: 10px;
+}
+
+.radarPolygon {
+  fill-opacity: 0.2;
+  stroke-width: 2;
+}
+
+.radarPolygon.latest {
+  fill: color-mix(in srgb, var(--accent) 32%, transparent);
+  stroke: var(--accent);
+}
+
+.radarPolygon.comparison {
+  fill: color-mix(in srgb, var(--accent-2) 22%, transparent);
+  stroke: var(--accent-2);
+}
+
+.radarLegend {
+  flex-wrap: wrap;
+}
+
+.legendSwatch.latest::before,
+.legendSwatch.comparison::before,
+.legendSwatch.current::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+  margin-right: 0.45rem;
+}
+
+.legendSwatch.latest::before {
+  background: var(--accent);
+}
+
+.legendSwatch.comparison::before {
+  background: var(--accent-2);
+}
+
+.legendSwatch.current::before {
+  background: var(--accent);
+}
+
+@media (max-width: 1100px) {
+  .tokenHistoryLayout,
+  .radarLayout {
+    grid-template-columns: 1fr;
+  }
+}
