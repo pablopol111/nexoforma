@@ -7,108 +7,91 @@ import type { DailyEntryRecord, MeasurementEntryRecord } from "@/lib/types";
 type Props = {
   dailyEntries: DailyEntryRecord[];
   measurementEntries: MeasurementEntryRecord[];
+  mode?: "summary" | "full";
 };
 
-type CalendarDayItem = {
-  key: string;
-  daily: DailyEntryRecord | undefined;
-  measurement: MeasurementEntryRecord | undefined;
-};
-
-function buildLastSevenDays() {
-  return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date();
-    date.setHours(12, 0, 0, 0);
-    date.setDate(date.getDate() - (6 - index));
-    return date.toISOString().slice(0, 10);
-  });
+function buildDays(mode: "summary" | "full", cursor: Date) {
+  const days: Date[] = [];
+  const start = new Date(cursor);
+  if (mode === "summary") {
+    start.setDate(cursor.getDate() - 6);
+    for (let i = 0; i < 7; i += 1) {
+      const day = new Date(start);
+      day.setDate(start.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  }
+  const monthStart = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+  const startWeekday = (monthStart.getDay() + 6) % 7;
+  monthStart.setDate(monthStart.getDate() - startWeekday);
+  while (days.length < 42) {
+    const day = new Date(monthStart);
+    day.setDate(monthStart.getDate() + days.length);
+    days.push(day);
+  }
+  return days;
 }
 
-export function CalendarSummary({ dailyEntries, measurementEntries }: Props) {
-  const items = useMemo<CalendarDayItem[]>(() => {
-    return buildLastSevenDays().map((day) => ({
-      key: day,
-      daily: dailyEntries.find((item) => item.entry_date === day),
-      measurement: measurementEntries.find((item) => item.entry_date === day),
-    }));
-  }, [dailyEntries, measurementEntries]);
+export function CalendarSummary({ dailyEntries, measurementEntries, mode = "summary" }: Props) {
+  const [view, setView] = useState<"summary" | "full">(mode);
+  const [cursor, setCursor] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const days = useMemo(() => buildDays(view, cursor), [view, cursor]);
 
-  const defaultSelected = [...items].reverse().find((item) => item.daily || item.measurement)?.key ?? items[items.length - 1]?.key ?? "";
-  const [selectedDay, setSelectedDay] = useState(defaultSelected);
-  const activeDay = items.find((item) => item.key === selectedDay) ?? items[items.length - 1] ?? null;
-
-  if (!items.length) {
-    return <section className="panel"><div className="emptyBox">Todavía no hay calendario disponible.</div></section>;
-  }
+  const selected = selectedDate ?? days[days.length - 1]?.toISOString().slice(0, 10);
+  const selectedDaily = dailyEntries.find((item) => item.entry_date === selected) ?? null;
+  const selectedMeasurement = measurementEntries.find((item) => item.entry_date === selected) ?? null;
 
   return (
-    <section className="panel stack" id="calendar">
+    <section className="panel stack">
       <div className="panelHead split">
-        <h2>Calendario semanal</h2>
-        <span className="chip">Pulsa un día para ver el detalle</span>
+        <h2>Calendario</h2>
+        <div className="segmented">
+          <button type="button" className={view === "summary" ? "" : "inactive"} onClick={() => setView("summary")}>Semana</button>
+          <button type="button" className={view === "full" ? "" : "inactive"} onClick={() => setView("full")}>Mes</button>
+        </div>
       </div>
-      <div className="calendarGrid calendarInteractive">
-        {items.map((item) => {
-          const isActive = item.key === activeDay?.key;
-          const hasDaily = Boolean(item.daily);
-          const hasMeasurement = Boolean(item.measurement);
+      <div className="calendarToolbar">
+        <button type="button" className="secondary" onClick={() => setCursor((prev) => new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() - (view === "summary" ? 7 : 30)))}>Anterior</button>
+        <strong>{cursor.toLocaleDateString("es-ES", { month: "long", year: "numeric" })}</strong>
+        <button type="button" className="secondary" onClick={() => setCursor((prev) => new Date(prev.getFullYear(), prev.getMonth(), prev.getDate() + (view === "summary" ? 7 : 30)))}>Siguiente</button>
+      </div>
+      {view === "full" ? <div className="weekdayHeader">{"LMXJVSD".split("").map((label) => <span key={label}>{label}</span>)}</div> : null}
+      <div className={`calendarGrid ${view === "full" ? "month" : "week"}`}>
+        {days.map((date) => {
+          const key = date.toISOString().slice(0, 10);
+          const daily = dailyEntries.find((item) => item.entry_date === key);
+          const measurement = measurementEntries.find((item) => item.entry_date === key);
+          const isSelected = selected === key;
+          const inCurrentMonth = date.getMonth() === cursor.getMonth();
           return (
-            <button
-              key={item.key}
-              type="button"
-              className={`calendarDayButton${isActive ? " active" : ""}${hasDaily || hasMeasurement ? " hasData" : ""}`}
-              onClick={() => setSelectedDay(item.key)}
-            >
-              <span className="calendarDayTitle">{formatShortDate(item.key)}</span>
-              <span className="calendarDayState">{hasDaily ? "Registrado" : "Sin datos"}</span>
-              {hasDaily ? <span>{formatNumber(item.daily?.weight_kg, 1)} kg</span> : <span>-</span>}
-              {hasDaily ? <span>{formatSteps(item.daily?.steps)} pasos</span> : <span>-</span>}
-              {hasMeasurement ? <span className="calendarBadge">Medidas registradas</span> : <span className="calendarBadge ghost">Sin medidas</span>}
+            <button key={key} type="button" className={`calendarDay ${isSelected ? "selected" : ""} ${inCurrentMonth ? "" : "mutedDay"}`} onClick={() => setSelectedDate(key)}>
+              <strong>{view === "summary" ? formatShortDate(key) : date.getDate()}</strong>
+              <span>{daily ? `${formatNumber(daily.weight_kg, 1)} kg` : "Sin datos"}</span>
+              <span>{daily ? `${formatSteps(daily.steps)} pasos` : ""}</span>
+              {measurement ? <small>Medidas</small> : null}
             </button>
           );
         })}
       </div>
-
-      {activeDay ? (
-        <section className="calendarDetail">
-          <div className="panelHead compactHead">
-            <h3>{formatDate(activeDay.key)}</h3>
-            <span className="chip">Detalle del día</span>
+      <div className="panel detailPanel">
+        <div className="panelHead"><h3>Detalle del día</h3></div>
+        <div className="detailsGrid oneCol">
+          <div className="detailCard"><span>Fecha</span><strong>{formatDate(selected)}</strong></div>
+          <div className="detailCard"><span>Peso</span><strong>{selectedDaily ? `${formatNumber(selectedDaily.weight_kg, 2)} kg` : "-"}</strong></div>
+          <div className="detailCard"><span>Pasos</span><strong>{selectedDaily ? formatSteps(selectedDaily.steps) : "-"}</strong></div>
+          <div className="detailCard"><span>Comentario</span><strong>{selectedDaily?.comment ?? selectedMeasurement?.comment ?? "-"}</strong></div>
+        </div>
+        {selectedMeasurement ? (
+          <div className="simpleList">
+            <span>Cintura {formatNumber(selectedMeasurement.waist_cm, 1)} cm</span>
+            <span>Cadera {formatNumber(selectedMeasurement.hip_cm, 1)} cm</span>
+            <span>Pecho {formatNumber(selectedMeasurement.chest_cm, 1)} cm</span>
+            <span>Muslo {formatNumber(selectedMeasurement.thigh_relaxed_cm, 1)} cm</span>
           </div>
-          <div className="columns two alignStart">
-            <article className="detailCard">
-              <span>Registro diario</span>
-              {activeDay.daily ? (
-                <div className="stack compactStack">
-                  <strong>{formatNumber(activeDay.daily.weight_kg, 2)} kg</strong>
-                  <span>{formatSteps(activeDay.daily.steps)} pasos</span>
-                  <span>{activeDay.daily.comment?.trim() ? activeDay.daily.comment : "Sin comentario"}</span>
-                </div>
-              ) : (
-                <p>Ese día no hay peso ni pasos registrados.</p>
-              )}
-            </article>
-            <article className="detailCard">
-              <span>Medidas</span>
-              {activeDay.measurement ? (
-                <div className="stack compactStack">
-                  <div className="measureList">
-                    <span>Cintura: {formatNumber(activeDay.measurement.waist_cm, 1)} cm</span>
-                    <span>Cadera: {formatNumber(activeDay.measurement.hip_cm, 1)} cm</span>
-                    <span>Muslo: {formatNumber(activeDay.measurement.thigh_relaxed_cm, 1)} cm</span>
-                    <span>Bíceps normal: {formatNumber(activeDay.measurement.biceps_normal_cm, 1)} cm</span>
-                    <span>Bíceps tensión: {formatNumber(activeDay.measurement.biceps_flexed_cm, 1)} cm</span>
-                    <span>Pecho: {formatNumber(activeDay.measurement.chest_cm, 1)} cm</span>
-                  </div>
-                  <span>{activeDay.measurement.comment?.trim() ? activeDay.measurement.comment : "Sin comentario"}</span>
-                </div>
-              ) : (
-                <p>Ese día no hay medidas registradas.</p>
-              )}
-            </article>
-          </div>
-        </section>
-      ) : null}
+        ) : <small>No hay medidas registradas para esta fecha.</small>}
+      </div>
     </section>
   );
 }

@@ -21,7 +21,7 @@ export function formatDate(value: string | null) {
 
 export function formatShortDate(value: string | null) {
   if (!value) return "-";
-  return new Date(value).toLocaleDateString("es-ES", { weekday: "short", day: "2-digit", month: "2-digit" });
+  return new Date(value).toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
 }
 
 export function formatDateTime(value: string | null) {
@@ -36,7 +36,7 @@ export function formatNumber(value: number | null | undefined, fractionDigits = 
 
 export function formatSteps(value: number | null | undefined) {
   if (value === null || value === undefined || Number.isNaN(value)) return "-";
-  return new Intl.NumberFormat("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value);
+  return new Intl.NumberFormat("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
 }
 
 export function todayValue() {
@@ -53,28 +53,15 @@ export function makeFullName(firstName?: string | null, lastName?: string | null
   return [firstName, lastName].filter(Boolean).join(" ").trim();
 }
 
-export function daysSinceDate(value: string | null) {
-  if (!value) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(value);
-  target.setHours(0, 0, 0, 0);
-  const diff = today.getTime() - target.getTime();
-  return Math.max(0, Math.floor(diff / 86_400_000));
+export function isProfileCompleteForMeasurements(profile: { height_cm?: number | null; reference_weight_kg?: number | null; target_weight_kg?: number | null }) {
+  return Boolean(profile.height_cm && profile.reference_weight_kg && profile.target_weight_kg);
 }
 
-export function isProfileCompleteForMeasurements(profile: {
-  first_name?: string | null;
-  last_name?: string | null;
-  height_cm?: number | null;
-  reference_weight_kg?: number | null;
-  target_weight_kg?: number | null;
-}) {
-  return Boolean(
-    (profile.first_name ?? "").trim() &&
-    (profile.last_name ?? "").trim() &&
-    profile.height_cm &&
-    profile.reference_weight_kg &&
-    profile.target_weight_kg,
-  );
+export function dayDiffFromToday(value: string | null) {
+  if (!value) return null;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const target = new Date(value);
+  target.setHours(0,0,0,0);
+  return Math.round((today.getTime() - target.getTime()) / 86400000);
 }

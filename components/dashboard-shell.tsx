@@ -16,10 +16,12 @@ const NAV_ITEMS: Record<UserRole, NavItem[]> = {
     { href: "/register", label: "Registro" },
   ],
   client: [
-    { href: "/client", label: "Dashboard" },
-    { href: "/client#perfil", label: "Perfil" },
-    { href: "/client#registros", label: "Registros" },
-    { href: "/client#historial", label: "Histórico" },
+    { href: "/client/dashboard", label: "Dashboard" },
+    { href: "/client/profile", label: "Perfil" },
+    { href: "/client/records", label: "Registros" },
+    { href: "/client/history", label: "Histórico" },
+    { href: "/client/calendar", label: "Calendario" },
+    { href: "/client/report", label: "Informe" },
   ],
 };
 

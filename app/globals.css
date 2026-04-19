@@ -801,515 +801,57 @@ th {
   }
 }
 
-.compactHead {
-  gap: 0.5rem;
-}
-
-.compactStack {
-  gap: 0.5rem;
-}
-
-.enhancedStatCard {
-  gap: 0.55rem;
-}
-
-.statTone {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--bg-soft);
-}
-
-.statTone.positive {
-  color: var(--success);
-  border-color: color-mix(in srgb, var(--success) 42%, transparent);
-  background: color-mix(in srgb, var(--success) 12%, var(--bg-soft));
-}
-
-.statTone.negative {
-  color: var(--danger);
-  border-color: color-mix(in srgb, var(--danger) 42%, transparent);
-  background: color-mix(in srgb, var(--danger) 12%, var(--bg-soft));
-}
-
-.statTone.neutral {
-  color: var(--text-soft);
-}
-
-.alertPanel {
-  border-color: color-mix(in srgb, var(--danger) 24%, var(--line));
-  background: linear-gradient(180deg, color-mix(in srgb, var(--danger) 10%, var(--bg-elevated)), color-mix(in srgb, var(--bg-elevated) 96%, transparent));
-}
-
-.summaryPanel p {
-  margin: 0;
-}
-
-.summaryGrid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 1rem;
-}
-
-.chartPanel {
-  gap: 0.75rem;
-}
-
-.chartCanvas {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.calendarInteractive {
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-}
-
-.calendarDayButton {
-  display: grid;
-  gap: 0.45rem;
-  align-content: start;
-  min-height: 164px;
-  padding: 0.95rem;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: var(--bg-soft);
-  color: var(--text);
-  text-align: left;
-}
-
-.calendarDayButton.active {
-  border-color: color-mix(in srgb, var(--accent) 56%, var(--line));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 42%, transparent);
-}
-
-.calendarDayButton.hasData {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, var(--bg-soft)), var(--bg-soft));
-}
-
-.calendarDayButton span {
-  color: inherit;
-}
-
-.calendarDayTitle {
-  font-weight: 700;
-}
-
-.calendarDayState {
-  color: var(--accent);
-}
-
-.calendarBadge {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  padding: 0.3rem 0.6rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent-2) 16%, var(--bg-elevated));
-  color: var(--text);
-}
-
-.calendarBadge.ghost {
-  background: var(--bg-elevated);
-  color: var(--text-soft);
-}
-
-.calendarDetail {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--line);
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--bg-soft) 84%, transparent);
-}
-
-.measureList {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-
-.measureList span {
-  padding: 0.55rem 0.7rem;
-  border-radius: 14px;
-  background: var(--bg-soft);
-}
-
-.fieldInline {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.fieldInline label {
-  color: var(--text-soft);
-}
-
-.fieldInline select {
-  min-width: 180px;
-}
-
-.measureRadarPanel {
-  gap: 1rem;
-}
-
-.radarLayout {
-  display: grid;
-  grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: center;
-}
-
-.radarCanvasWrap {
-  display: grid;
-  place-items: center;
-  padding: 0.5rem;
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--bg-soft) 84%, transparent);
-}
-
-.radarSvg {
-  width: 100%;
-  max-width: 340px;
-  height: auto;
-}
-
-.radarGrid {
-  fill: none;
-  stroke: var(--line);
-  stroke-width: 1;
-}
-
-.radarAxis {
-  stroke: color-mix(in srgb, var(--text-soft) 46%, transparent);
-  stroke-width: 1;
-}
-
-.radarAxisLabel {
-  fill: var(--text-soft);
-  font-size: 11px;
-}
-
-.radarPolygon {
-  stroke-width: 2.5;
-  fill-opacity: 0.16;
-}
-
-.radarPolygon.latest {
-  stroke: var(--accent);
-  fill: var(--accent);
-}
-
-.radarPolygon.comparison {
-  stroke: var(--accent-2);
-  fill: var(--accent-2);
-}
-
-.radarLegend {
-  gap: 0.75rem;
-}
-
-.legendSwatch.latest {
-  color: var(--accent);
-}
-
-.legendSwatch.comparison {
-  color: var(--accent-2);
-}
-
-.compactCard {
-  background: var(--bg-soft);
-}
-
-.premiumBodyGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.bodyCard {
-  padding: 1rem;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg-soft) 86%, transparent);
-}
-
-.bodyCard.reference {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-2) 12%, var(--bg-soft)), var(--bg-soft));
-}
-
-.bodyCard.current {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, var(--bg-soft)), var(--bg-soft));
-}
-
-.bodyCard.target {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--success) 12%, var(--bg-soft)), var(--bg-soft));
-}
-
-.bodyFigure {
-  min-height: 150px;
-}
-
-.bodyFront::before,
-.bodySide::before {
-  content: "";
-  position: absolute;
-  top: -28px;
-  left: 50%;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  transform: translateX(-50%);
-  background: inherit;
-}
-
-.bodyFront::after,
-.bodySide::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -24px;
-  width: 26px;
-  height: 26px;
-  transform: translateX(-50%);
-  border-radius: 0 0 18px 18px;
-  background: inherit;
-}
-
-@media (max-width: 1100px) {
-  .calendarInteractive,
-  .premiumBodyGrid,
-  .summaryGrid,
-  .radarLayout {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 720px) {
-  .measureList {
-    grid-template-columns: 1fr;
-  }
-
-  .fieldInline {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-
-.wrapOnMobile {
-  flex-wrap: wrap;
-}
-
-.compactStack {
-  gap: 0.4rem;
-}
-
-.actionCluster {
-  display: flex;
-  gap: 0.8rem;
-  align-items: center;
-}
-
-.actionCluster.alignEnd {
-  justify-content: flex-end;
-}
-
-.tokenHistoryLayout {
-  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
-}
-
-.tokenHistoryWrap {
-  max-height: 360px;
-}
-
-.tableCode {
-  display: inline-block;
-  padding: 0.3rem 0.5rem;
-  border-radius: 10px;
-  background: var(--bg-soft);
-  color: var(--accent);
-  font-size: 0.9rem;
-}
-
-.statusPill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 92px;
-  padding: 0.3rem 0.65rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  border: 1px solid var(--line);
-}
-
-.statusPill.available,
-.chip.ok {
-  color: var(--success);
-  background: color-mix(in srgb, var(--success) 14%, transparent);
-}
-
-.statusPill.used {
-  color: var(--accent-2);
-  background: color-mix(in srgb, var(--accent-2) 14%, transparent);
-}
-
-.statusPill.revoked,
-.chip.warn {
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 14%, transparent);
-}
-
-.compactChartPanel .chartSvg {
-  max-height: 220px;
-}
-
-.humanoidGrid {
-  align-items: stretch;
-}
-
-.bodyCard {
-  display: grid;
-  gap: 0.8rem;
-}
-
-.humanoidFigure {
-  min-height: 240px;
-  display: grid;
-  place-items: center;
+.warningBox {
+  padding: 1rem 1.1rem;
   border-radius: 18px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-soft) 92%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 127, 127, 0.25);
+  background: rgba(201, 90, 90, 0.12);
+  color: var(--text);
 }
-
-.humanFigure {
-  width: 100%;
-  max-width: 160px;
-  height: auto;
-}
-
-.humanFigure .figureMain,
-.humanFigure .figureLimb {
-  fill: color-mix(in srgb, var(--text) 82%, transparent);
+.successText { color: var(--success); }
+.dangerText { color: var(--danger); }
+.chartHeadWrap { align-items: flex-start; }
+.filtersWrap { display: grid; gap: 0.75rem; justify-items: end; }
+.inlineFilters { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.inlineFilters input { max-width: 180px; }
+.chartHoverLine { stroke: rgba(255,255,255,0.18); stroke-width: 1; stroke-dasharray: 5 5; }
+.chartTooltipTitle { fill: var(--text); font-weight: 700; font-size: 13px; }
+.chartTooltipValue { fill: var(--text-soft); font-size: 12px; }
+.bodyCard.premium { align-items: center; text-align: center; padding: 1rem; }
+.premiumGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bodySvg { width: 100%; max-width: 180px; height: auto; }
+.bodyHead { fill: rgba(255,255,255,0.92); }
+.bodyShape, .bodyArm {
+  fill: color-mix(in srgb, var(--accent) 52%, var(--accent-2) 48%);
   opacity: 0.9;
 }
-
-.humanFigure.reference .figureMain,
-.humanFigure.reference .figureLimb {
-  fill: color-mix(in srgb, var(--accent-2) 74%, white 8%);
-}
-
-.humanFigure.current .figureMain,
-.humanFigure.current .figureLimb {
-  fill: color-mix(in srgb, var(--accent) 78%, white 5%);
-}
-
-.humanFigure.target .figureMain,
-.humanFigure.target .figureLimb {
-  fill: color-mix(in srgb, var(--success) 74%, white 10%);
-}
-
-.bodyCardMeta strong {
-  font-size: 1.05rem;
-}
-
-.bodyMetricList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.bodyMetricList span {
-  font-size: 0.8rem;
-  padding: 0.32rem 0.55rem;
-  border-radius: 999px;
-  background: var(--bg-soft);
-}
-
-.measureRadarPanel {
-  overflow: hidden;
-}
-
-.radarLayout {
-  display: grid;
-  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
-}
-
-.radarCanvasWrap {
-  display: grid;
-  place-items: center;
-  min-height: 320px;
-  border-radius: 20px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-soft) 94%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
-  border: 1px solid var(--line);
-}
-
-.radarSvg {
-  width: min(100%, 320px);
-  height: auto;
-  overflow: visible;
-}
-
-.radarGrid,
-.radarAxis {
-  fill: none;
-  stroke: color-mix(in srgb, var(--text-soft) 24%, transparent);
-  stroke-width: 1;
-}
-
-.radarAxisLabel {
-  fill: var(--text-soft);
-  font-size: 10px;
-}
-
-.radarPolygon {
-  fill-opacity: 0.2;
-  stroke-width: 2;
-}
-
-.radarPolygon.latest {
-  fill: color-mix(in srgb, var(--accent) 32%, transparent);
-  stroke: var(--accent);
-}
-
-.radarPolygon.comparison {
-  fill: color-mix(in srgb, var(--accent-2) 22%, transparent);
-  stroke: var(--accent-2);
-}
-
-.radarLegend {
-  flex-wrap: wrap;
-}
-
-.legendSwatch.latest::before,
-.legendSwatch.comparison::before,
-.legendSwatch.current::before {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  display: inline-block;
-  margin-right: 0.45rem;
-}
-
-.legendSwatch.latest::before {
-  background: var(--accent);
-}
-
-.legendSwatch.comparison::before {
-  background: var(--accent-2);
-}
-
-.legendSwatch.current::before {
-  background: var(--accent);
-}
-
-@media (max-width: 1100px) {
-  .tokenHistoryLayout,
-  .radarLayout {
+.bodyCard.selected { border-color: rgba(240,199,94,0.35); box-shadow: 0 0 0 1px rgba(240,199,94,0.12), var(--shadow); }
+.bodyMetrics { display: grid; gap: 0.15rem; }
+.radarLayout { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 1rem; align-items: center; }
+.radarSvg { width: 100%; height: auto; }
+.legendAccent { background: rgba(240,199,94,0.14); }
+.legendAccent2 { background: rgba(97,183,255,0.14); }
+.calendarToolbar, .splitWrap, .tokenActions { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.weekdayHeader { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.5rem; }
+.weekdayHeader span { text-align: center; font-weight: 700; color: var(--text-soft); }
+.calendarGrid.week { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.calendarGrid.month { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.calendarDay { text-align: left; padding: 0.95rem; border: 1px solid var(--line); border-radius: 18px; background: var(--bg-soft); min-height: 120px; }
+.calendarDay.selected { border-color: rgba(240,199,94,0.42); background: rgba(240,199,94,0.08); }
+.calendarDay.mutedDay { opacity: 0.55; }
+.detailPanel { background: color-mix(in srgb, var(--bg-soft) 86%, transparent); }
+.detailsGrid.oneCol { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.statusPill { display: inline-flex; padding: 0.4rem 0.75rem; border-radius: 999px; }
+.statusPill.available { background: rgba(114,211,154,0.16); color: var(--success); }
+.statusPill.used { background: rgba(97,183,255,0.16); color: var(--accent-2); }
+.statusPill.revoked { background: rgba(255,127,127,0.16); color: var(--danger); }
+.reportPreview .panel { box-shadow: none; }
+.nestedPanel { background: var(--bg-soft); }
+.compactTable { max-width: 100%; }
+code { color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+@media (max-width: 960px) {
+  .premiumGrid, .radarLayout, .detailsGrid.oneCol, .calendarGrid.week, .calendarGrid.month {
     grid-template-columns: 1fr;
   }
+  .weekdayHeader { display: none; }
 }
